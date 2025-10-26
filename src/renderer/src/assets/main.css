@@ -23,7 +23,7 @@ code {
     Consolas,
     Liberation Mono,
     monospace;
-  font-size: 85%;
+  font-size: 80%;
 }
 
 #app {
@@ -41,6 +41,7 @@ code {
   width: 128px;
   will-change: filter;
   transition: filter 300ms;
+  cursor: pointer;
 }
 
 .logo:hover {
@@ -125,7 +126,7 @@ code {
 }
 
 .versions {
-  position: absolute;
+  position: fixed;
   bottom: 30px;
   margin: 0 auto;
   padding: 15px 0;

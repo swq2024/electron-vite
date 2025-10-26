@@ -37,3 +37,12 @@ $ npm run build:linux
 ```bash
 $ npm create @quick-start/electron
 ```
+### 目录结构
+![alt text](68a8bc30cc780873adf0b78cb61d7a9d.png)
+
+### 目录说明
+![alt text](a7b3a00639b53038d3bfc6eb3d1c9ca8.png)
+
+### electron-vite
+- [electron-vite](https://github.com/alex8088/electron-vite)
+- [中文文档](https://cn.electron-vite.org/guide/)

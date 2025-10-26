@@ -5,6 +5,11 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
   pingFn: () => ipcRenderer.invoke('ping2')
 }
+// Database operations API
+const dbOperations = {
+  createUser: (user) => ipcRenderer.invoke('user-create', user),
+  findAllUsers: () => ipcRenderer.invoke('user-find-all')
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -13,6 +18,7 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('db', dbOperations)
   } catch (error) {
     console.error(error)
   }

@@ -1,18 +1,23 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
   "include": [
-    "src/renderer/src/env.d.ts",
+    "types/env.d.ts",
+    "types/global.d.ts",
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.vue",
-    "src/preload/*.d.ts"
+    "src/preload/types/**/*.ts",
   ],
   "compilerOptions": {
-    "composite": true,
-    "baseUrl": ".",
+    "composite": true, // 启用复合构建模式，允许在多个项目中共享相同的配置
+    "baseUrl": ".", // 设置模块解析的基准目录为项目根目录，方便使用相对路径导入模块
     "paths": {
+      // 设置路径别名，简化模块导入路径
       "@renderer/*": [
-        "src/renderer/src/*"
-      ]
+        "src/renderer/src/*", 
+      ],
+      "@main/*": [
+        "src/main/*"
+      ],
     }
   }
 }

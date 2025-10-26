@@ -1,4 +1,13 @@
 {
-  "files": [],
-  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }]
+  "files": [], // 不直接包含任何文件，使用 references 来引用其他配置文件
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }],
+  "include": [],
+  "exclude": ["node_modules"], // 排除 node_modules 目录，避免编译不必要的文件
+  "compilerOptions": {
+    "typeRoots": ["node_modules/@types"], // 指定类型定义文件的根目录，确保 TypeScript 能够找到类型定义文件。
+    "lib": ["ES2024", "DOM"], // 包含 ES2024 和 DOM 库的类型定义，确保 TypeScript 理解最新的 ECMAScript 特性和浏览器 DOM API。
+    "target": "es2024", // 将代码编译为 ES2024 版本，支持最新的 JavaScript 特性
+    "module": "esnext", // 使用 ESNext 模块系统，支持动态导入等特性
+    "moduleResolution": "node", // 使用 Node.js 模块解析策略
+  }
 }
