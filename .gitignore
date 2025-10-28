@@ -28,6 +28,7 @@ env/.env*
 *.sqlite
 *.db
 *.db-journal
+ormlogs.log
 
 # Electron/平台相关
 *.asar

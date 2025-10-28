@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import img_404 from '@renderer/assets/404.png'
-import img_404_cloud from '@renderer/assets/404_images/404_cloud.png'
+import img_404_cloud from '@renderer/assets/404_cloud.png'
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>

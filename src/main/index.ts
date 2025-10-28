@@ -21,7 +21,7 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false, // 设置为 false 以启用 Node.js 支持，以便在渲染器进程中访问 Node.js API
       webSecurity: false, // 设置为 false 以禁用 Web 安全策略，以便在渲染器进程中加载本地文件或执行 Node.js API
-      devTools: process.env.NODE_ENV === 'development', // 设置为 true 以在开发模式下启用开发者工具
+      devTools: import.meta.env.VITE_NODE_ENV === 'development', // 设置为 true 以在开发模式下启用开发者工具
       scrollBounce: process.platform === 'darwin' // 设置滚动反弹效果(橡皮动画)，仅在 macOS 上有效
       // contextIsolation: false, // 设置为 false 以禁用上下文隔离，以便在渲染器进程中直接访问 Node.js 模块 强烈不推荐
       // nodeIntegration: true // 启用 Node.js 集成 以允许在渲染器进程中使用 Node.js 模块 同样不推荐
@@ -50,7 +50,7 @@ function createWindow(): void {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: '/' })
   }
 }
 
@@ -79,10 +79,18 @@ app.whenReady().then(async () => {
   ipcMain.handle 用于处理渲染进程发送的请求，并可以返回结果给渲染进程。
   */
 
-  // 监听来自渲染进程的 'ping' 消息，并打印出 'pong'
+  // 监听来自渲染进程的 'ping' 消息，并在终端打印出 'pong'
   ipcMain.on('ping1', () => console.log('pong'))
+  // 监听来自渲染进程的 'electron:say' 消息，并在终端打印出渲染进程携带的参数 'arg', 此处是 'Hello from renderer' 字符串
+  ipcMain.on('electron:say', (_, arg) => {
+    console.log('electron:say', arg)
+  })
   // 处理来自渲染进程的 'ping2' 请求，并返回 'pong from main process' 字符串作为响应
   ipcMain.handle('ping2', () => 'pong from main process')
+  // 处理来自渲染进程的 'electron:doAThing' 请求，并返回渲染进程携带的参数 'arg' 与字符串 'from main process' 的拼接结果作为响应
+  ipcMain.handle('electron:doAThing', (_, arg) => {
+    return arg + ' from main process'
+  })
 
   // 初始化数据库连接
   try {
@@ -140,7 +148,6 @@ app.whenReady().then(async () => {
   ipcMain.handle('user-find-all', async () => {
     return await userRepository.find()
   })
-
   createWindow()
 
   // 在 macOS 上，当点击 Dock 图标并且没有其他窗口打开时，通常会重新创建一个窗口。

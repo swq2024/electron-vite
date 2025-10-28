@@ -8,7 +8,8 @@ export const AppDataSource = new DataSource({
   username: 'root',
   password: '123456',
   database: 'test',
-  logger: 'debug', // 启用调试日志模式
+  // logging: ['query'], // 打印所有查询语句
+  // logger: 'advanced-console', // 在TERMINAL中打印查询语句
   synchronize: true, // 自动同步实体到数据库, 生产环境禁用
   entities: [User]
 })

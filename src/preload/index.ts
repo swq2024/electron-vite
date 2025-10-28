@@ -7,7 +7,11 @@ const api = {
 }
 // Database operations API
 const dbOperations = {
-  createUser: (user) => ipcRenderer.invoke('user-create', user),
+  createUser: (user: User) =>
+    ipcRenderer.invoke('user-create', {
+      ...user,
+      age: import.meta.env.PRELOAD_VITE_KEY // 测试: 测试环境变量(仅预加载脚本可用)在预加载脚本中的使用
+    }),
   findAllUsers: () => ipcRenderer.invoke('user-find-all')
 }
 
