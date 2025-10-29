@@ -1,10 +1,51 @@
-import { app, shell, BrowserWindow, ipcMain, Menu } from 'electron'
-import { join } from 'path'
+import { app, shell, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron'
+import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import 'reflect-metadata' // 引入 reflect-metadata 以启用装饰器元数据支持
-import { AppDataSource } from './database/data-source'
-import { User } from './database/entities/user/user'
+import fs from 'fs-extra'
+import { ChildProcess, spawn } from 'child_process'
+
+// 强制设置 stdout 编码为 UTF-8，解决中文乱码
+process.stdout.setDefaultEncoding('utf8')
+
+let backendProcess: ChildProcess | null = null // 后端进程实例
+
+function startBackendService(): void {
+  // 后端入口文件路径（区分开发/生产环境）
+  const backendEntry = app.isPackaged
+    ? path.join(process.resourcesPath, 'backend', 'bin', 'www') // 打包后路径
+    : path.join(__dirname, '../../../backend-service/bin/www') // 开发环境路径（根据实际项目调整）
+
+  // 端口（可动态检测是否占用，这里简化为固定值）
+  const port = 3000
+
+  // 数据库路径：放在 Electron 的用户数据目录（避免权限问题）
+  const dbPath = path.join(app.getPath('userData'), 'backend-data', 'db.sql')
+  fs.ensureDirSync(path.dirname(dbPath)) // 确保目录存在
+
+  // 启动后端进程
+  backendProcess = spawn('node', [backendEntry, port.toString(), dbPath], {
+    stdio: app.isPackaged ? 'pipe' : 'inherit' // 开发环境日志输出到控制台
+  })
+
+  // 监听后端输出日志
+  if (app.isPackaged) {
+    backendProcess.stdout?.on('data', (data) => {
+      console.log(`[backend-service]: ${data}`)
+    })
+    backendProcess.stderr?.on('data', (data) => {
+      console.error(`[backend-error]: ${data}`)
+    })
+  }
+
+  // 监听后端退出
+  backendProcess.on('exit', (code) => {
+    console.log(`backend is exited with code: ${code}`)
+    backendProcess = null
+  })
+  console.log('backend service is startting...')
+}
 
 function handleSetTitle(event: Electron.IpcMainEvent, title: string): void {
   const webContents = event.sender
@@ -58,6 +99,11 @@ function createWindow(): void {
           label: 'Decrement'
         }
       ]
+    },
+    {
+      label: 'DevTools',
+      click: () => mainWindow.webContents.openDevTools({ mode: 'bottom' }),
+      accelerator: 'F12'
     }
   ])
   Menu.setApplicationMenu(menu)
@@ -73,9 +119,9 @@ function createWindow(): void {
   }
 
   // 打开开发者工具，并将其分离为一个单独的窗口
-  mainWindow.webContents.openDevTools({
-    mode: 'bottom'
-  })
+  // mainWindow.webContents.openDevTools({
+  //   mode: 'bottom'
+  // })
 }
 
 // This method will be called when Electron has finished
@@ -96,6 +142,12 @@ app.whenReady().then(async () => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  try {
+    startBackendService() // 启动后端服务函数
+  } catch (error) {
+    console.error('Failed to start server', error)
+  }
 
   /**
   ipcMain.on 和 ipcMain.handle 的区别在于：
@@ -123,62 +175,8 @@ app.whenReady().then(async () => {
     return arg + ' from main process'
   })
 
-  // 初始化数据库连接
-  try {
-    await AppDataSource.initialize()
-    console.log('Data Source has been initialized!')
-  } catch (err) {
-    console.error('Error during Data Source initialization:', err)
-    // 按需决定是否退出 app
-    // process.exit(1)
-  }
+  // 在创建窗口之前, 启动后端服务器
 
-  const userRepository = AppDataSource.getRepository(User)
-  const newUser = userRepository.create({
-    name: 'Alice',
-    age: 18,
-    hobby: 'Reading'
-  })
-  // 新增用户
-  const user = await userRepository.findOneBy({ name: newUser.name })
-  if (!user) {
-    await userRepository.save(newUser)
-    console.log('New user saved:', newUser)
-  } else {
-    console.log('User already exists:', newUser.name)
-  }
-  // 查询所有用户
-  const users = await userRepository.find()
-  if (users.length > 0) {
-    console.log('Users:', users)
-  } else {
-    console.log('No users found in the database.')
-  }
-  // 更新用户
-  const userToUpdate = await userRepository.findOneBy({ name: 'Alice' })
-  if (userToUpdate) {
-    userToUpdate.age = 20
-    await userRepository.save(userToUpdate)
-    console.log('User updated:', userToUpdate)
-  } else {
-    console.log('No user found to update with name:', 'Alice')
-  }
-
-  // 删除用户
-  // const res = await userRepository.delete({ name: 'Alice' })
-  // if (res.affected && res.affected > 0) {
-  //   console.log('User deleted:', 'Alice')
-  // } else {
-  //   console.log('No user found to delete with name:', 'Alice')
-  // }
-  // 暴露数据库操作 API 给渲染进程
-  ipcMain.handle('user-create', async (_, payload) => {
-    const user = userRepository.create(payload)
-    return await userRepository.save(user)
-  })
-  ipcMain.handle('user-find-all', async () => {
-    return await userRepository.find()
-  })
   createWindow()
 
   // 在 macOS 上，当点击 Dock 图标并且没有其他窗口打开时，通常会重新创建一个窗口。
@@ -187,6 +185,13 @@ app.whenReady().then(async () => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+})
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll() // 注销所有全局快捷键
+  if (backendProcess) {
+    backendProcess.kill('SIGTERM') // 发送 SIGTERM 信号以优雅地关闭后端服务
+  }
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

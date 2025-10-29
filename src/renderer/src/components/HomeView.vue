@@ -14,16 +14,22 @@
     <em>{{ counterValue }}</em>
   </p>
   <hr />
-  <button @click="createUser">createUser</button>
-  <br />
-  <button @click="findAllUser">findAllUser</button>
-  <br />
+
   <RouterLink to="/">Home</RouterLink>
   <RouterLink to="/notfound">404</RouterLink>
+  <button @click="getIndexData">getIndexData</button>
+
+  <hr />
+
+  <h3>Article List</h3>
+  <ul v-for="article in articleList" :key="article.id">
+    <li>{{ article.title }}</li>
+  </ul>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import instance from '@renderer/utils'
 
 // No args to send
 const ipcSend1 = (): void => window.electron.ipcRenderer.send('ping1')
@@ -44,30 +50,40 @@ window.api.onUpdateCounter((val) => {
 
   window.api.outCounterValue(counterValue.value)
 })
-
-const createUser = async (): Promise<void> => {
-  const res = await window.db.createUser({
-    name: 'Alice',
-    age: 0,
-    hobby: 'Reading'
-  })
-  console.log('createUser:', res)
+interface IArticle {
+  id: number
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
 }
-const findAllUser = async (): Promise<void> => {
-  const res = await window.db.findAllUsers()
-  const div = document.createElement('div')
-  div.className = 'user-list'
-  res.forEach((item) => {
-    div.innerHTML += `<p>${JSON.stringify(item)}</p>`
-  })
-  if (!document.querySelector('.user-list')) {
-    document.body.appendChild(div)
-    console.log('不存在 user-list 元素，创建了一个新的 div 并添加到 body 中')
-    return
-  } else {
-    console.log('存在 user-list 元素，不再创建新的 div')
+const articleList = ref<IArticle[]>([])
+const getArticleData = async (): Promise<void> => {
+  try {
+    const res = await instance.get('/article')
+    articleList.value = res.data.data.articles
+      .map((item: IArticle) => {
+        return {
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          createdAt: new Date(item.createdAt).toLocaleString(),
+          updatedAt: new Date(item.updatedAt).toLocaleString()
+        }
+      })
+      .filter((item: IArticle) => item.title.includes('99') || item.title.includes('100'))
+  } catch (error) {
+    console.error(error)
   }
-  console.log('111', import.meta.env.RENDERER_VITE_KEY) // 打印渲染进程环境变量
+}
+getArticleData()
+const getIndexData = async (): Promise<void> => {
+  try {
+    const res = await instance.get('/')
+    console.log(res.data.message)
+  } catch (error) {
+    console.error(error)
+  }
 }
 </script>
 

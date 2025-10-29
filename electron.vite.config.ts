@@ -43,19 +43,49 @@ export default defineConfig(({ command, mode }) => {
       renderer: {
         resolve: {
           alias: {
+            '@renderer': resolve(__dirname, 'src/renderer/src')
+          }
+        },
+        plugins: [vue()],
+        server: {
+          open: false,
+          proxy: {
+            '/api': {
+              target: env.VITE_BACKEND_URL,
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/api/, '')
+            }
+          }
+        },
+        base: './',
+        build: {
+          // 打包时不生成 source map
+          // minify: 'terser'
+        }
+      }
+    }
+  } else {
+    // command === 'build' — ensure plugins used in serve are also applied in build
+    return {
+      main: {
+        resolve: {
+          alias: {
+            '@root': resolve('src')
+          }
+        },
+        plugins: [externalizeDepsPlugin(), swcPlugin()]
+      },
+      preload: {
+        plugins: [externalizeDepsPlugin()]
+      },
+      renderer: {
+        resolve: {
+          alias: {
             '@renderer': resolve('src/renderer/src')
           }
         },
         plugins: [vue()]
       }
-    }
-  } else {
-    // command === 'build'
-    return {
-      // build specific configuration goes here
-      main: {},
-      preload: {},
-      renderer: {}
     }
   }
 })

@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly PRELOAD_VITE_KEY: number
   readonly RENDERER_VITE_KEY: number
   readonly VITE_NODE_ENV: string
+  readonly VITE_BACKEND_URL: string
   // more env variables...
 }
 
