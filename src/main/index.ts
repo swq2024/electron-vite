@@ -1,10 +1,16 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Menu } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import 'reflect-metadata' // 引入 reflect-metadata 以启用装饰器元数据支持
 import { AppDataSource } from './database/data-source'
 import { User } from './database/entities/user/user'
+
+function handleSetTitle(event: Electron.IpcMainEvent, title: string): void {
+  const webContents = event.sender
+  const win = BrowserWindow.fromWebContents(webContents)
+  win?.setTitle(title)
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -37,11 +43,24 @@ function createWindow(): void {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
-  // 打开开发者工具，并将其分离为一个单独的窗口
-  // mainWindow.webContents.openDevTools({
-  //   mode: 'detach',
-  //   activate: true
-  // })
+
+  // 主进程到渲染器进程, 主要是构建一个由原生操作系统菜单控制的数字计数器。
+  const menu = Menu.buildFromTemplate([
+    {
+      label: app.name,
+      submenu: [
+        {
+          click: () => mainWindow.webContents.send('update-counter', 1),
+          label: 'Increment'
+        },
+        {
+          click: () => mainWindow.webContents.send('update-counter', -1),
+          label: 'Decrement'
+        }
+      ]
+    }
+  ])
+  Menu.setApplicationMenu(menu)
 
   // HMR for renderer base on electron-vite cli.
   // 热更新基于 electron-vite cli。
@@ -52,6 +71,11 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: '/' })
   }
+
+  // 打开开发者工具，并将其分离为一个单独的窗口
+  mainWindow.webContents.openDevTools({
+    mode: 'bottom'
+  })
 }
 
 // This method will be called when Electron has finished
@@ -85,6 +109,13 @@ app.whenReady().then(async () => {
   ipcMain.on('electron:say', (_, arg) => {
     console.log('electron:say', arg)
   })
+  // 监听来自渲染进程的 'set-title' 消息，并设置窗口标题为传递过来的参数
+  ipcMain.on('set-title', handleSetTitle)
+  // 监听来自渲染进程的 'counter-value' 消息，并在终端打印出传递过来的参数
+  ipcMain.on('counter-value', (_, value) => {
+    console.log('counter-value', value)
+  })
+
   // 处理来自渲染进程的 'ping2' 请求，并返回 'pong from main process' 字符串作为响应
   ipcMain.handle('ping2', () => 'pong from main process')
   // 处理来自渲染进程的 'electron:doAThing' 请求，并返回渲染进程携带的参数 'arg' 与字符串 'from main process' 的拼接结果作为响应
