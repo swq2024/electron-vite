@@ -17,14 +17,15 @@
 
   <RouterLink to="/">Home</RouterLink>
   <RouterLink to="/notfound">404</RouterLink>
+  <hr />
+
   <button @click="getIndexData">getIndexData</button>
 
   <hr />
 
-  <h3>Article List</h3>
-  <ul v-for="article in articleList" :key="article.id">
-    <li>{{ article.title }}</li>
-  </ul>
+  <div v-for="article in articleList" :key="article.id">
+    <span>{{ article.content }}</span>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -71,7 +72,7 @@ const getArticleData = async (): Promise<void> => {
           updatedAt: new Date(item.updatedAt).toLocaleString()
         }
       })
-      .filter((item: IArticle) => item.title.includes('99') || item.title.includes('100'))
+      .filter((item: IArticle) => item.title.includes('98'))
   } catch (error) {
     console.error(error)
   }

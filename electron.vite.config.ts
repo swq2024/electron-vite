@@ -15,10 +15,8 @@ import { defineConfig, loadEnv, externalizeDepsPlugin, swcPlugin } from 'electro
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig(({ command, mode }) => {
-  console.log('current mode', mode)
   // 在 electron.vite.config.ts 加载当前 mode(包括默认环境变量) 下的环境变量, 供后续的配置使用
   const env = loadEnv(mode, join(__dirname, 'env'))
-  console.log('env111', env)
   if (command === 'serve') {
     return {
       main: {

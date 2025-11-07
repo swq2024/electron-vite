@@ -1,50 +1,37 @@
 import { app, shell, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron'
-import path, { join } from 'path'
+import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import 'reflect-metadata' // 引入 reflect-metadata 以启用装饰器元数据支持
-import fs from 'fs-extra'
 import { ChildProcess, spawn } from 'child_process'
 
-// 强制设置 stdout 编码为 UTF-8，解决中文乱码
-process.stdout.setDefaultEncoding('utf8')
-
-let backendProcess: ChildProcess | null = null // 后端进程实例
+let backendChildProcess: ChildProcess | null = null
 
 function startBackendService(): void {
   // 后端入口文件路径（区分开发/生产环境）
   const backendEntry = app.isPackaged
-    ? path.join(process.resourcesPath, 'backend', 'bin', 'www') // 打包后路径
-    : path.join(__dirname, '../../../backend-service/bin/www') // 开发环境路径（根据实际项目调整）
+    ? join(process.resourcesPath, 'backend', 'bin', 'www') // 打包后路径
+    : join(__dirname, '../../../backend-service/bin/www') // 开发环境路径（根据实际项目调整）
 
   // 端口（可动态检测是否占用，这里简化为固定值）
   const port = 3000
 
-  // 数据库路径：放在 Electron 的用户数据目录（避免权限问题）
-  const dbPath = path.join(app.getPath('userData'), 'backend-data', 'db.sql')
-  fs.ensureDirSync(path.dirname(dbPath)) // 确保目录存在
-
-  // 启动后端进程
-  backendProcess = spawn('node', [backendEntry, port.toString(), dbPath], {
+  // 启动后端子进程，传入端口参数作为命令行参数，并设置标准输出和错误输出的处理方式
+  backendChildProcess = spawn('node', [backendEntry, port.toString()], {
     stdio: app.isPackaged ? 'pipe' : 'inherit' // 开发环境日志输出到控制台
   })
 
-  // 监听后端输出日志
+  // 监听后端输出日志 (仅在打包时有效)
   if (app.isPackaged) {
-    backendProcess.stdout?.on('data', (data) => {
+    backendChildProcess.stdout?.on('data', (data) => {
       console.log(`[backend-service]: ${data}`)
     })
-    backendProcess.stderr?.on('data', (data) => {
+    backendChildProcess.stderr?.on('data', (data) => {
       console.error(`[backend-error]: ${data}`)
     })
   }
 
-  // 监听后端退出
-  backendProcess.on('exit', (code) => {
-    console.log(`backend is exited with code: ${code}`)
-    backendProcess = null
-  })
-  console.log('backend service is startting...')
+  console.log(`backend is started, listening on port: ${port}`)
 }
 
 function handleSetTitle(event: Electron.IpcMainEvent, title: string): void {
@@ -189,8 +176,9 @@ app.whenReady().then(async () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll() // 注销所有全局快捷键
-  if (backendProcess) {
-    backendProcess.kill('SIGTERM') // 发送 SIGTERM 信号以优雅地关闭后端服务
+  if (backendChildProcess) {
+    backendChildProcess.kill('SIGTERM') // 发送 SIGTERM 信号以优雅地关闭后端服务
+    backendChildProcess = null // 清除后端子进程的引用
   }
 })
 
