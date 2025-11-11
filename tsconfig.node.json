@@ -12,7 +12,7 @@
     "types": ["electron-vite/node"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "strictPropertyInitialization": false,
+    "strictPropertyInitialization": false, // 允许在构造函数中省略属性初始化，这对于某些库（如 Sequelize）来说是必要的
     "sourceMap": true, // 启用源代码映射，以便调试时能够映射到原始 TypeScript 文件
   }
 }

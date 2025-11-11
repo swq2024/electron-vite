@@ -15,10 +15,6 @@
   </p>
   <hr />
 
-  <RouterLink to="/">Home</RouterLink>
-  <RouterLink to="/notfound">404</RouterLink>
-  <hr />
-
   <button @click="getIndexData">getIndexData</button>
 
   <hr />
@@ -26,11 +22,14 @@
   <div v-for="article in articleList" :key="article.id">
     <span>{{ article.content }}</span>
   </div>
+
+  <TestError />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import instance from '@renderer/utils'
+import servers from '@renderer/utils/request'
+import TestError from './TestError.vue'
 
 // No args to send
 const ipcSend1 = (): void => window.electron.ipcRenderer.send('ping1')
@@ -61,7 +60,7 @@ interface IArticle {
 const articleList = ref<IArticle[]>([])
 const getArticleData = async (): Promise<void> => {
   try {
-    const res = await instance.get('/article')
+    const res = await servers.get('/article')
     articleList.value = res.data.data.articles
       .map((item: IArticle) => {
         return {
@@ -80,7 +79,7 @@ const getArticleData = async (): Promise<void> => {
 getArticleData()
 const getIndexData = async (): Promise<void> => {
   try {
-    const res = await instance.get('/')
+    const res = await servers.get('/')
     console.log(res.data.message)
   } catch (error) {
     console.error(error)

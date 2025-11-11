@@ -11,13 +11,13 @@ function startBackendService(): void {
   // 后端入口文件路径（区分开发/生产环境）
   const backendEntry = app.isPackaged
     ? join(process.resourcesPath, 'backend', 'bin', 'www') // 打包后路径
-    : join(__dirname, '../../../backend-service/bin/www') // 开发环境路径（根据实际项目调整）
+    : join(__dirname, '../../../backend-service/bin/www') // 开发环境路径
 
-  // 端口（可动态检测是否占用，这里简化为固定值）
-  const port = 3000
+  // 端口号
+  const port = process.env.VITE_ELECTRON_BACKEND_PORT || 3000
 
-  // 启动后端子进程，传入端口参数作为命令行参数，并设置标准输出和错误输出的处理方式
-  backendChildProcess = spawn('node', [backendEntry, port.toString()], {
+  // 启动后端子进程
+  backendChildProcess = spawn('node', [backendEntry], {
     stdio: app.isPackaged ? 'pipe' : 'inherit' // 开发环境日志输出到控制台
   })
 
@@ -41,6 +41,13 @@ function handleSetTitle(event: Electron.IpcMainEvent, title: string): void {
 }
 
 function createWindow(): void {
+  // 启动后端服务
+  try {
+    startBackendService() // 启动后端服务函数
+  } catch (error) {
+    console.error('Failed to start server', error)
+  }
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -49,7 +56,6 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}), // 设置窗口图标，仅在 Linux 上有效
     webPreferences: {
-      // 这里为什么使用.js 文件而不是 .ts 文件？
       // 详情参见：https://cn.electron-vite.org/guide/typescript-decorator
       // 需要通过构建工具(这里使用由 swc[https://swc.rs/] 驱动 swcPlugin 插件)将其转换为 JavaScript。
       preload: join(__dirname, '../preload/index.js'),
@@ -117,6 +123,8 @@ function createWindow(): void {
 // 当 Electron 完成初始化并准备创建浏览器窗口时，将调用此方法。
 // 某些 API 只能在此事件发生后使用。
 app.whenReady().then(async () => {
+  createWindow()
+
   // Set app user model id for windows
   // 设置 Windows 的应用用户模型 ID，以便在 Windows 任务栏上正确显示图标。
   electronApp.setAppUserModelId('com.electron')
@@ -129,12 +137,6 @@ app.whenReady().then(async () => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  try {
-    startBackendService() // 启动后端服务函数
-  } catch (error) {
-    console.error('Failed to start server', error)
-  }
 
   /**
   ipcMain.on 和 ipcMain.handle 的区别在于：
@@ -162,10 +164,6 @@ app.whenReady().then(async () => {
     return arg + ' from main process'
   })
 
-  // 在创建窗口之前, 启动后端服务器
-
-  createWindow()
-
   // 在 macOS 上，当点击 Dock 图标并且没有其他窗口打开时，通常会重新创建一个窗口。
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -174,6 +172,7 @@ app.whenReady().then(async () => {
   })
 })
 
+// 在退出应用程序之前
 app.on('will-quit', () => {
   globalShortcut.unregisterAll() // 注销所有全局快捷键
   if (backendChildProcess) {

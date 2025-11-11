@@ -6,6 +6,12 @@ interface User {
   hobby: string
 }
 
+interface memoryInfo {
+  jsHeapSizeLimit: number
+  totalJSHeapSize: number
+  usedJSHeapSize: number
+}
+
 interface Window {
   electron: import('@electron-toolkit/preload').ElectronAPI
   api: {

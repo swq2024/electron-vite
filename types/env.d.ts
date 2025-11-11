@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly RENDERER_VITE_KEY: number
   readonly VITE_NODE_ENV: string
   readonly VITE_BACKEND_URL: string
+  readonly VITE_ELECTRON_BACKEND_PORT: number
   // more env variables...
 }
 
