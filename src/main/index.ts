@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { ChildProcess, spawn } from 'child_process'
-import { registerIcpHandlers } from './main-handlers'
+import { registerIcpHandlers } from './services'
 import { log } from './utils/logger'
 
 log('Application starting...')

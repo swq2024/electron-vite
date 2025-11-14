@@ -5,10 +5,15 @@ interface IResult {
   error?: unknown
 }
 
+interface IToken {
+  accessToken: string
+  refreshToken: string
+}
+
 interface Window {
   electronAPI: {
-    setToken: (token: string) => Promise<IResult>
-    getToken: () => Promise<string | null>
+    saveTokens: (token: IToken) => Promise<IResult>
+    getTokens: () => Promise<IToken | null>
     removeToken: () => Promise<void>
   }
 }

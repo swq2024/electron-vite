@@ -8,17 +8,17 @@ import { contextBridge, ipcRenderer } from 'electron'
 contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 设置认证Token
-   * @param {string} token 认证Token
+   * @param {object} tokens 包含accessToken和refreshToken的字符串对象
    * @returns {Promise<void>} 返回一个Promise对象，用于等待主进程的响应
    */
-  setToken: (token) => ipcRenderer.invoke('set-token', token),
+  saveTokens: (tokens) => ipcRenderer.invoke('auth:saveTokens', tokens),
   /**
    * 获取认证Token
    * @returns {Promise<string>} 返回一个Promise对象，用于等待主进程的响应
    */
-  getToken: () => ipcRenderer.invoke('get-token'),
+  getTokens: () => ipcRenderer.invoke('auth:getTokens'),
   /**
    * 删除认证Token
    */
-  removeToken: () => ipcRenderer.invoke('remove-token')
+  removeToken: () => ipcRenderer.invoke('auth:removeToken')
 })

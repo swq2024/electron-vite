@@ -1,8 +1,8 @@
 import { resolve, join } from 'path'
-import dotenv from 'dotenv'
+import dotenvx from '@dotenvx/dotenvx'
 
 // 加载环境变量
-dotenv.config({
+dotenvx.config({
   path: [
     resolve(__dirname, 'env/.env'),
     resolve(__dirname, 'env/.env.development'),
