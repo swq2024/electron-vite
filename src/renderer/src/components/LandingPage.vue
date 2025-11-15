@@ -13,8 +13,8 @@ import { useAuthStore } from '@renderer/stores/auth'
 const authStore = useAuthStore()
 const handleLogin = async (): Promise<void> => {
   const data = {
-    username: 'yuhuo666',
-    password: '12345678'
+    username: 'admin',
+    password: 'admin123'
   }
 
   const res = await authStore.handleLogin(data)

@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import auth from '@renderer/api/auth'
 import users from '@renderer/api/user'
-// import axios from 'axios'
-import { apiServices } from '@renderer/utils/request'
+import axios from 'axios'
+// import { apiServices } from '@renderer/utils/request'
 // import { jwtDecode } from 'jwt-decode'
 // import type { JwtPayload } from '../types/jwt'
 
@@ -30,7 +30,6 @@ export const useAuthStore = defineStore('user', () => {
 
       setAuth(accessToken, user)
 
-      console.log('RT', refreshToken)
       return Promise.resolve(response.data.success)
     } catch (error) {
       await logout()
@@ -82,9 +81,10 @@ export const useAuthStore = defineStore('user', () => {
     }
     try {
       // 直接调用axios实例, 不通过拦截器处理
-      const response = await apiServices.post(
+      const response = await axios.post(
         'http://localhost:3000/api/auth/refresh',
         {
+          accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken
         }
         // { skipAuth: true }
