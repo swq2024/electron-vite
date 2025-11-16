@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import auth from '@renderer/api/auth'
 import users from '@renderer/api/user'
-import axios from 'axios'
-// import { apiServices } from '@renderer/utils/request'
+import servers from '@renderer/utils/request'
 // import { jwtDecode } from 'jwt-decode'
 // import type { JwtPayload } from '../types/jwt'
 
@@ -72,7 +71,7 @@ export const useAuthStore = defineStore('user', () => {
       return null // 如果正在刷新，则直接返回null以避免递归调用
     }
 
-    isRefreshing.value = true
+    isRefreshing.value = true // 设置刷新状态为true，防止递归调用
     const tokens = await window.electronAPI.getTokens()
 
     if (!tokens || !tokens.refreshToken) {
@@ -80,14 +79,12 @@ export const useAuthStore = defineStore('user', () => {
       throw new Error('No refresh token available.')
     }
     try {
-      // 直接调用axios实例, 不通过拦截器处理
-      const response = await axios.post(
+      const response = await servers.post(
         'http://localhost:3000/api/auth/refresh',
         {
-          accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken
-        }
-        // { skipAuth: true }
+        },
+        { isRefreshTokenRequest: true }
       )
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data
 

@@ -1,6 +1,6 @@
-import { apiServices } from '@renderer/utils/request'
+import servers from '@renderer/utils/request'
 
 export default {
   /**获取个人信息 */
-  getProfile: () => apiServices.get('/users/profile')
+  getProfile: () => servers.get('/users/profile')
 }
