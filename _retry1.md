@@ -28,7 +28,7 @@
 3.  **保安** 问：“你手上有‘已经换过卡了’的纸条吗？”（`if (originalRequest._retry)`）。
 4.  **员工A** 说：“没有。”（`_retry` 是 `undefined` 或者 `false`）。
 5.  **保安** 又问：“你手上拿的是‘换卡申请表’吗？”（`if (originalRequest.isRefreshTokenRequest)`）。
-6.  **员工A** 说：“不是，我是来上班的。”
+6.  **员工A** 说：“不是，我是来上班的。(`isRefreshTokenRequest`是 `false`)”
 7.  **保安** 说：“好吧，你的卡过期了。请你先去保安室换一张新卡（`authStore.refreshAccessToken()`），然后拿着新卡和这张‘重试’纸条（`_retry: true`）再来找我。”
 
 在这个剧情里，`_retry` 标记是给**已经失败过一次，并且已经换了新卡，现在回来重试**的普通员工用的。它的作用是防止这个员工在换卡的过程中，再次被其他保安拦住，又要去换一次卡，造成混乱（无限循环）。

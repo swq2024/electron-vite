@@ -105,7 +105,16 @@ servers.interceptors.response.use(
 
     const originalRequest = error.config
 
-    // 如果是401错误，并且不是刷新token的请求本身，则进入刷新逻辑
+    // 由于AT过期导致401错误 -> 请求A失败【因为该请求不是刷新token请求的接口，所以originalRequest.isRefreshTokenRequest标识默认为 false
+    // 即!originalRequest.isRefreshTokenRequest为true 并且此时originalRequest._retry标识并未设置(undefined或null) 所以!originalRequest._retry为true
+    // 最终进入响应拦截器的401特殊处理 -> 将originalRequest._retry设置为true, 表示请求A已经在处理】
+    // 请求A主要的作用是去触发刷新token请求(请求时会将authStore.isRefreshing设置为true, 防止重复请求刷新token接口)
+    // 请求A(作为首个失败请求)第一次进入401处理逻辑时, authStore.isRefreshing为false，所以会进入刷新token的逻辑(trycatch块)
+    // 此时请求A通过 await 被阻塞在等待状态(await authStore.refreshAccessToken() 阻塞在等待刷新token的返回结果),
+    // 此时如果还有请求B、C、D等都失败了, 进入涌入401的处理逻辑, 会发现authStore.isRefreshing为true(代表正在刷新token中，不要再去请求刷新token的接口了),
+    // 所以会将请求B、C、D等都加入队列等待，直到刷新token成功后，processQueues会携带着新的AT，依次执行队列中的请求B、C、D...
+    // 如果后续如果请求B、C、D...携带着正确的AT仍发生错误(由于这些请求被originalRequest._retry标识为true, 不会再次进入401处理逻辑)
+    // 代表是网络问题或服务器端错误等其他问题，不再进行重试, 直接reject出去
     if (originalRequest && isUnauthorizedError(error, originalRequest)) {
       originalRequest._retry = true // 标记请求为重试
 
@@ -120,7 +129,9 @@ servers.interceptors.response.use(
           })
         })
           .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}` // 为重试请求设置新的header
+            // 这里的token就是请求刷新token后返回的新的AT，用于原先失败的请求重新执行
+            // 为已添加到队列中的每个失败请求(请求B、C、D...)设置新的header，并重新发起请求
+            originalRequest.headers.Authorization = `Bearer ${token}`
             return servers(originalRequest)
           })
           .catch((err) => {
@@ -129,19 +140,17 @@ servers.interceptors.response.use(
       }
 
       try {
-        // 尝试刷新token 这里返回新的AT 用于原先失败的请求重新执行
+        // 尝试刷新token 这里返回新的AT 在该方法中会对authStore.isRefreshing值的完成修改(true->false)
         const newAccessToken = await authStore.refreshAccessToken()
 
         // 更新axios实例的全局默认headers, 为所有后续请求做准备
         servers.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`
 
-        // 处理队列中的所有失败请求
+        // 处理队列中的所有失败请求(请求B、C、D...)
         processQueue(null, newAccessToken)
 
-        // 为重试请求设置新的header
+        // 为重试请求A【触发刷新token的失败请求】设置新的header, 并重新发起请求A
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
-
-        // 重试请求并返回结果
         return servers(originalRequest)
       } catch (refreshError) {
         // 如果刷新token失败，处理队列中的请求

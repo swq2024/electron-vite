@@ -1,5 +1,4 @@
-// src/utils/errorHandler.ts
-import { ElMessage } from 'element-plus' // 假设你使用 Element Plus
+import { ElMessage } from 'element-plus'
 
 export enum ErrorCode {
   UNAUTHORIZED = 401,
