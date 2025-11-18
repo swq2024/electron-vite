@@ -82,7 +82,6 @@ servers.interceptors.request.use(
     const controller = new AbortController()
     config.signal = controller.signal //  将 signal 附加到请求配置
     pendingRequests.set(requestKey, controller) // 将请求控制器存储在Map中，以便后续取消
-
     return config
   },
   (error) => {
@@ -91,7 +90,7 @@ servers.interceptors.request.use(
   }
 )
 
-// 添加响应拦截器
+// 响应拦截器
 servers.interceptors.response.use(
   (response) => {
     const requestKey = getRequestKey(response.config)

@@ -53,3 +53,7 @@ $ npm create @quick-start/electron
 你加了盐（修改数据），不能立刻尝（此时菜还没拌匀），得等锅铲翻炒完（DOM更新完成），再尝才知道最终味道（最新DOM状态）。
 
 nextTick就是那个"等翻炒完"的动作。
+
+问题: 用户首次登录时会如果用户名或密码错误会触发刷新token接口]
+
+TODO: 封装请求按钮【vue中如何优雅的处理按钮loading】 https://www.bilibili.com/video/BV1QtxQzLEu3/?share_source=copy_web&vd_source=2d98141f0558fb205fffc50e07a5eab1

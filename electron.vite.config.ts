@@ -17,7 +17,13 @@ dotenvx.config({
  */
 
 import { defineConfig, loadEnv, externalizeDepsPlugin, bytecodePlugin } from 'electron-vite'
-import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import Vue from '@vitejs/plugin-vue'
+import Unocss from 'unocss/vite'
+
+const pathSrc = resolve(__dirname, 'src/renderer/src')
 
 export default defineConfig(({ command, mode }) => {
   // 在 electron.vite.config.ts 加载当前 mode(包括默认环境变量) 下的环境变量, 供后续的配置使用
@@ -38,10 +44,25 @@ export default defineConfig(({ command, mode }) => {
       renderer: {
         resolve: {
           alias: {
-            '@renderer': resolve(__dirname, 'src/renderer/src')
+            '@renderer': pathSrc
           }
         },
-        plugins: [vue()],
+        plugins: [
+          Vue(),
+          Unocss(),
+          AutoImport({
+            resolvers: [
+              // 自动导入 Element Plus 相关函数，如：ElMessage, ElMessageBox... (带样式)
+              ElementPlusResolver()
+            ]
+          }),
+          Components({
+            resolvers: [
+              // 自动导入 Element Plus 组件
+              ElementPlusResolver()
+            ]
+          })
+        ],
         server: {
           open: false,
           proxy: {

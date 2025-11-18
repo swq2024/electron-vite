@@ -1,0 +1,8 @@
+{
+  "project_name": "electron-app",
+  "terminal": {
+    "shell": {
+      "program": "sh"
+    }
+  }
+}
