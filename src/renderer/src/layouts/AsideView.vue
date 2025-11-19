@@ -21,7 +21,7 @@
           <el-icon><Key /></el-icon>
           <span>所有密码</span>
         </el-menu-item>
-        <el-sub-menu index="/category">
+        <!-- <el-sub-menu index="/category">
           <template #title>
             <el-icon>
               <Menu />
@@ -35,7 +35,12 @@
             <el-menu-item index="/3">游戏账号</el-menu-item>
             <el-menu-item index="/4">游戏账号</el-menu-item>
           </el-menu-item-group>
-        </el-sub-menu>
+        </el-sub-menu> -->
+
+        <el-menu-item index="/category">
+          <el-icon><Menu /></el-icon>
+          <span>我的分类</span>
+        </el-menu-item>
         <el-menu-item index="/collection">
           <el-icon><CollectionTag /></el-icon>
           <span>我的收藏</span>

@@ -7,6 +7,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'home',
     component: LandingPage,
+    redirect: 'databoard',
     meta: { title: 'Home' },
     children: [
       {
@@ -20,6 +21,12 @@ const routes: RouteRecordRaw[] = [
         name: 'password',
         component: () => import('@renderer/views/PasswordPage.vue'),
         meta: { title: 'Password' }
+      },
+      {
+        path: 'category',
+        name: 'category',
+        component: () => import('@renderer/views/CategoryPage.vue'),
+        meta: { title: 'Category' }
       }
     ]
   },

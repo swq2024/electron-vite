@@ -7,6 +7,7 @@ import { errorHandler } from './error'
 import { createPinia } from 'pinia'
 import { useAuthStore } from './stores/auth'
 import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'virtual:uno.css'
 
