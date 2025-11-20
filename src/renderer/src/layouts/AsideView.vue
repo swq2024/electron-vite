@@ -1,6 +1,6 @@
 <template>
-  <div class="overflow-auto shadow-md" :style="{ width: appStore.asideWidth }">
-    <el-scrollbar height="600px">
+  <div class="aside-container" :style="{ width: appStore.asideWidth }">
+    <el-scrollbar class="aside-scrollbar">
       <el-menu
         :collapse="isCollapse"
         :default-active="defaultActive"
@@ -11,7 +11,7 @@
         @select="handleSelect"
       >
         <div class="ml-5">
-          <span class="text-gray-400 text-3"> 主导航 </span>
+          <span class="menu-group-title"> 主导航 </span>
         </div>
         <el-menu-item index="/databoard">
           <el-icon><DataBoard /></el-icon>
@@ -21,22 +21,6 @@
           <el-icon><Key /></el-icon>
           <span>所有密码</span>
         </el-menu-item>
-        <!-- <el-sub-menu index="/category">
-          <template #title>
-            <el-icon>
-              <Menu />
-            </el-icon>
-            <span>我的分类</span>
-          </template>
-          <el-menu-item-group>
-            <el-menu-item index="/default">默认分类</el-menu-item>
-            <el-menu-item index="/1">社交媒体</el-menu-item>
-            <el-menu-item index="/2">游戏账号</el-menu-item>
-            <el-menu-item index="/3">游戏账号</el-menu-item>
-            <el-menu-item index="/4">游戏账号</el-menu-item>
-          </el-menu-item-group>
-        </el-sub-menu> -->
-
         <el-menu-item index="/category">
           <el-icon><Menu /></el-icon>
           <span>我的分类</span>
@@ -53,8 +37,12 @@
           <el-icon><Setting /></el-icon>
           <span>设置</span>
         </el-menu-item>
+        <el-menu-item index="/setting">
+          <el-icon><Platform /></el-icon>
+          <span>设备管理</span>
+        </el-menu-item>
         <div class="ml-5">
-          <span class="text-gray-400 text-3"> 管理员 </span>
+          <span class="menu-group-title"> 管理员 </span>
         </div>
         <el-menu-item index="/panel">
           <el-icon><Avatar /></el-icon>
@@ -83,17 +71,32 @@ const defaultActive = ref(route.path)
 </script>
 
 <style scoped>
-.el-menu {
-  /*--el-menu-active-color: var(--menu-active-text-color);*/
-  height: 100vh;
-  /*border: none;*/
+.aside-container {
+  height: 100%; /* 触达视口底部 */
+  overflow: hidden; /* 隐藏外层滚动，仅内层菜单滚动 */
+  background-color: var(--el-menu-bg-color); /* 与菜单背景一致 */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1); /* 轻微阴影增强层次感 */
 }
-@supports (scrollbar-width: none) {
-  .el-menu {
-    scrollbar-width: none; /* Firefox */
-    &::-webkit-scrollbar {
-      display: none; /* Chrome/Safari/Edge */
-    }
-  }
+/* 滚动容器：高度自适应外层，仅内容溢出时滚动 */
+.aside-scrollbar {
+  height: 100%;
+  padding: 8px 0; /* 上下内边距，避免菜单贴边 */
+}
+/* 菜单分组标题：优化样式，与原型一致 */
+.menu-group-title {
+  font-size: 12px;
+  color: #9ca3af; /* 灰色小标题，符合深色主题 */
+}
+/* 菜单样式优化：去掉多余边框，适配贴底布局 */
+.el-menu {
+  height: 100%;
+  border-right: none; /* 去掉右侧边框，避免与主内容区分割感 */
+  --el-menu-active-color: #3b82f6; /* 激活态蓝色，与你的主题一致 */
+  --el-menu-text-color: #666; /* 菜单文字白色 */
+  --el-menu-hover-text-color: #3b82f6; /* hover蓝色 */
+}
+/* 优化折叠状态下的菜单间距 */
+:deep(.el-menu-item) {
+  margin: 4px 0;
 }
 </style>

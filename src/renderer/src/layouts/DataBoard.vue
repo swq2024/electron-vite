@@ -2,10 +2,6 @@
   <div class="flex flex-col space-y-5">
     <div class="flex justify-between items-center">
       <div>
-        <div class="cursor-pointer" @click="appStore.changeAsideWidth">
-          <el-icon v-if="appStore.asideWidth === '180px'" :size="24"><Fold /></el-icon>
-          <el-icon v-else :size="24"><Expand /></el-icon>
-        </div>
         <h2 class="font-bold">数据面板</h2>
       </div>
 
@@ -18,11 +14,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { useAppStore } from '@renderer/stores/app'
-
-const appStore = useAppStore()
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 :deep(.el-divider__text.is-left) {

@@ -1,13 +1,21 @@
 <template>
-  <div class="flex justify-between items-center h-[64px] bg-indigo-500">
-    <div class="flex justify-start items-center ml5 space-x-1 h-12">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 640 640">
-        <path
-          fill="#74C0FC"
-          d="M400 416C497.2 416 576 337.2 576 240C576 142.8 497.2 64 400 64C302.8 64 224 142.8 224 240C224 258.7 226.9 276.8 232.3 293.7L71 455C66.5 459.5 64 465.6 64 472L64 552C64 565.3 74.7 576 88 576L168 576C181.3 576 192 565.3 192 552L192 512L232 512C245.3 512 256 501.3 256 488L256 448L296 448C302.4 448 308.5 445.5 313 441L346.3 407.7C363.2 413.1 381.3 416 400 416zM440 160C462.1 160 480 177.9 480 200C480 222.1 462.1 240 440 240C417.9 240 400 222.1 400 200C400 177.9 417.9 160 440 160z"
-        />
-      </svg>
-      <span class="font-bold text-xl text-blue-300">KeyValut</span>
+  <div class="flex justify-between items-center h-[60px] bg-slate-500">
+    <div class="flex justify-start items-center ml5 space-x-6">
+      <div class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 640 640">
+          <path
+            fill="#74C0FC"
+            d="M400 416C497.2 416 576 337.2 576 240C576 142.8 497.2 64 400 64C302.8 64 224 142.8 224 240C224 258.7 226.9 276.8 232.3 293.7L71 455C66.5 459.5 64 465.6 64 472L64 552C64 565.3 74.7 576 88 576L168 576C181.3 576 192 565.3 192 552L192 512L232 512C245.3 512 256 501.3 256 488L256 448L296 448C302.4 448 308.5 445.5 313 441L346.3 407.7C363.2 413.1 381.3 416 400 416zM440 160C462.1 160 480 177.9 480 200C480 222.1 462.1 240 440 240C417.9 240 400 222.1 400 200C400 177.9 417.9 160 440 160z"
+          />
+        </svg>
+        <span class="font-bold text-xl text-blue-300">KeyValut</span>
+      </div>
+      <div class="cursor-pointer mt2" @click="appStore.changeAsideWidth">
+        <el-icon v-if="appStore.asideWidth === '180px'" :size="24" color="#74C0FC"
+          ><Fold
+        /></el-icon>
+        <el-icon v-else :size="24" color="#74C0FC"><Expand /></el-icon>
+      </div>
     </div>
 
     <div>
@@ -17,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAppStore } from '@renderer/stores/app'
+const appStore = useAppStore()
 const errorHandler = (): boolean => true
 </script>
 

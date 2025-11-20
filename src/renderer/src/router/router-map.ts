@@ -1,6 +1,6 @@
 import { RouteRecordRaw } from 'vue-router'
 import LandingPage from '@renderer/layouts/LandingPage.vue'
-import DashBoard from '@renderer/layouts/DashBoard.vue'
+import DataBoard from '@renderer/layouts/DataBoard.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -12,9 +12,9 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'databoard',
-        name: 'dashboard',
-        component: DashBoard,
-        meta: { title: 'Dashboard' }
+        name: 'databoard',
+        component: DataBoard,
+        meta: { title: 'DataBoard' }
       },
       {
         path: 'password',
@@ -27,6 +27,18 @@ const routes: RouteRecordRaw[] = [
         name: 'category',
         component: () => import('@renderer/views/CategoryPage.vue'),
         meta: { title: 'Category' }
+      },
+      {
+        path: 'collection',
+        name: 'collection',
+        component: () => import('@renderer/views/CollectionPage.vue'),
+        meta: { title: 'Collection' }
+      },
+      {
+        path: 'trash',
+        name: 'trash',
+        component: () => import('@renderer/views/TrashPage.vue'),
+        meta: { title: 'Trash' }
       }
     ]
   },
