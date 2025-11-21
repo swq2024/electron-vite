@@ -39,6 +39,18 @@ const routes: RouteRecordRaw[] = [
         name: 'trash',
         component: () => import('@renderer/views/TrashPage.vue'),
         meta: { title: 'Trash' }
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: () => import('@renderer/views/SettingsPage.vue'),
+        meta: { title: 'Settings' }
+      },
+      {
+        path: 'device',
+        name: 'device',
+        component: () => import('@renderer/views/DevicePage.vue'),
+        meta: { title: 'Device' }
       }
     ]
   },

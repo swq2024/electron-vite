@@ -33,11 +33,11 @@
           <el-icon><Delete /></el-icon>
           <span>回收站</span>
         </el-menu-item>
-        <el-menu-item index="/setting">
+        <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
-          <span>设置</span>
+          <span>应用设置</span>
         </el-menu-item>
-        <el-menu-item index="/setting">
+        <el-menu-item index="/device">
           <el-icon><Platform /></el-icon>
           <span>设备管理</span>
         </el-menu-item>
