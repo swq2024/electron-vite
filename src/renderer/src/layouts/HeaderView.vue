@@ -10,12 +10,6 @@
         </svg>
         <span class="font-bold text-xl text-blue-300">KeyValut Pro</span>
       </div>
-      <div class="cursor-pointer mt2" @click="appStore.changeAsideWidth">
-        <el-icon v-if="appStore.asideWidth === '180px'" :size="24" color="#74C0FC"
-          ><Fold
-        /></el-icon>
-        <el-icon v-else :size="24" color="#74C0FC"><Expand /></el-icon>
-      </div>
     </div>
 
     <div>
@@ -25,8 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { useAppStore } from '@renderer/stores/app'
-const appStore = useAppStore()
 const errorHandler = (): boolean => true
 </script>
 

@@ -13,7 +13,7 @@
         <div class="ml-5">
           <span class="menu-group-title"> 主导航 </span>
         </div>
-        <el-menu-item index="/databoard">
+        <el-menu-item index="/">
           <el-icon><DataBoard /></el-icon>
           <span>数据面板</span>
         </el-menu-item>
@@ -37,10 +37,6 @@
           <el-icon><Setting /></el-icon>
           <span>应用设置</span>
         </el-menu-item>
-        <el-menu-item index="/device">
-          <el-icon><Platform /></el-icon>
-          <span>设备管理</span>
-        </el-menu-item>
         <div class="ml-5">
           <span class="menu-group-title"> 管理员 </span>
         </div>
@@ -56,7 +52,7 @@
 <script setup lang="ts">
 import { useAppStore } from '@renderer/stores/app'
 import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 
 const appStore = useAppStore()
 const router = useRouter()
@@ -68,6 +64,10 @@ const handleSelect = (path: string): void => {
   router.push(path)
 }
 const defaultActive = ref(route.path)
+
+onBeforeRouteUpdate((to) => {
+  defaultActive.value = to.path
+})
 </script>
 
 <style scoped>

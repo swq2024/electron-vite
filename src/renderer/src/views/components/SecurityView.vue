@@ -6,7 +6,14 @@
         <div class="flex flex-col space-y-3">
           <div class="flex justify-between">
             <p>主密码管理</p>
-            <el-button type="primary" icon="Edit" text size="small">修改</el-button>
+            <el-button
+              type="primary"
+              icon="Edit"
+              text
+              size="small"
+              @click="router.push('/settings/masterPasswd')"
+              >修改</el-button
+            >
           </div>
           <div>
             <p class="text-gray-400 text-xs">
@@ -56,7 +63,15 @@
         <div class="flex flex-col space-y-3">
           <div class="flex justify-between">
             <p>活动会话</p>
-            <el-button type="primary" text size="small" icon="Memo">查看全部</el-button>
+            <el-button
+              type="primary"
+              text
+              size="small"
+              icon="Memo"
+              @click="router.push('/settings/session')"
+            >
+              查看全部
+            </el-button>
           </div>
           <div>
             <p class="text-gray-400 text-xs">
@@ -115,7 +130,10 @@
 
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+
+const router = useRouter()
 
 const rateValue = ref(3.7)
 const switchValue = ref(false)
