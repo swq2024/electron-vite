@@ -16,18 +16,21 @@ export const useAuthStore = defineStore('user', () => {
   const isAuthenticated = computed(() => !!accessToken.value)
 
   // --- Actions ---
-  const setAuth = (_accessToken, _user): void => {
+  const setAuth = (_accessToken): void => {
     accessToken.value = _accessToken
+  }
+
+  const setUser = (_user): void => {
     user.value = _user
   }
 
   const handleLogin = async (data): Promise<void> => {
     try {
       const response = await auth.loginApi(data)
-      const { accessToken, refreshToken, user } = response.data.data
+      const { accessToken, refreshToken } = response.data.data
       await window.electronAPI.saveTokens({ accessToken, refreshToken })
 
-      setAuth(accessToken, user)
+      setAuth(accessToken)
 
       return Promise.resolve(response.data.success)
     } catch (error) {
@@ -119,6 +122,7 @@ export const useAuthStore = defineStore('user', () => {
     isRefreshing,
     isAuthenticated,
     setAuth,
+    setUser,
     handleLogin,
     logout,
     initialize,

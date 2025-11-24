@@ -10,16 +10,16 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   # 关键：确保后端目录不被排除（若后端目录是 backend-service/，需添加此规则）
-  - '!../backend-service/**/*.{test.js,test.ts}'  # 仅排除后端的测试文件，保留核心代码
-extraResources:
-  # 配置后端代码的打包规则：将本地后端目录复制到 resources/backend
-  - from: ../backend-service  # 本地后端项目的根目录（替换为你的实际后端目录路径）
-    to: backend           # 打包后在 resources 中的目录名（固定为 backend，与主进程代码对应）
-    filter:               # 过滤：仅打包后端核心运行文件，排除开发依赖和无用文件
-      - '**/*'            # 包含后端所有文件
-      - '!../backend-service/node_modules/**/*.{md,ts,test.js}'  # 排除 node_modules 中的非运行文件
-      - '!../backend-service/{.gitignore,.env,.eslintrc.js}'     # 排除后端的开发配置文件
-      - '!../backend-service/{tests,docs}'                       # 排除后端的测试、文档目录
+  # - '!../backend-service/**/*.{test.js,test.ts}'  # 仅排除后端的测试文件，保留核心代码
+# extraResources:
+#   # 配置后端代码的打包规则：将本地后端目录复制到 resources/backend
+#   - from: ../backend-service  # 本地后端项目的根目录（替换为你的实际后端目录路径）
+#     to: backend           # 打包后在 resources 中的目录名（固定为 backend，与主进程代码对应）
+#     filter:               # 过滤：仅打包后端核心运行文件，排除开发依赖和无用文件
+#       - '**/*'            # 包含后端所有文件
+#       - '!../backend-service/node_modules/**/*.{md,ts,test.js}'  # 排除 node_modules 中的非运行文件
+#       - '!../backend-service/{.gitignore,.env,.eslintrc.js}'     # 排除后端的开发配置文件
+#       - '!../backend-service/{tests,docs}'                       # 排除后端的测试、文档目录
 asarUnpack:
   - resources/**
 win:
@@ -33,7 +33,7 @@ nsis:
   createDesktopShortcut: always # options: always, never, or notDeclared
   oneClick: false # 关闭一键安装，改为手动确认
   allowToChangeInstallationDirectory: true # 允许用户更改安装目录
-  runAfterFinish: false  # 安装完成后自动运行应用（可选，默认 true)
+  runAfterFinish: false # 安装完成后自动运行应用（可选，默认 true)
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:

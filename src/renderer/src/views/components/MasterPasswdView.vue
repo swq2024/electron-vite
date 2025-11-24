@@ -1,123 +1,136 @@
 <template>
-  <div class="reset-password-container">
-    <el-card class="reset-password-card">
-      <!-- 动态页面标题 -->
-      <div class="page-title">{{ pageTitle }}</div>
+  <div>
+    <BreadcrumbItem />
+    <div class="reset-password-container">
+      <el-card class="reset-password-card">
+        <!-- 动态页面标题 -->
+        <div class="page-title">{{ pageTitle }}</div>
 
-      <!-- 1. 选择验证方式（初始页面） -->
-      <div v-if="currentStage === 'selectMethod'" class="form-container">
-        <div class="desc">请选择一种方式验证身份，完成密码重置</div>
-        <el-button type="primary" class="method-btn" icon="Message" @click="goToVerifyCode">
-          邮箱验证码验证
-        </el-button>
-        <el-button
-          type="success"
-          class="method-btn"
-          icon="Lock"
-          @click="goToResetPassword('password')"
-        >
-          验证当前密码
-        </el-button>
-      </div>
+        <!-- 1. 选择验证方式（初始页面） -->
+        <div v-if="currentStage === 'selectMethod'" class="form-container">
+          <div class="desc">请选择一种方式验证身份，完成密码重置</div>
+          <el-button type="primary" class="method-btn" icon="Message" @click="goToVerifyCode">
+            邮箱验证码验证
+          </el-button>
+          <el-button
+            type="success"
+            class="method-btn"
+            icon="Lock"
+            @click="goToResetPassword('password')"
+          >
+            验证当前密码
+          </el-button>
+        </div>
 
-      <!-- 2. 邮箱验证码验证（分支1） -->
-      <div v-if="currentStage === 'verifyCode'" class="form-container">
-        <el-form ref="codeFormRef" :model="form" :rules="codeRules" label-width="100px">
-          <el-form-item label="注册邮箱" prop="email">
-            <el-input
-              v-model="form.email"
-              placeholder="请输入绑定的邮箱"
-              prefix="el-icon-message"
-              clearable
-            />
-          </el-form-item>
-          <el-form-item label="验证码" prop="code">
-            <el-row :gutter="10">
-              <el-col :span="14">
-                <el-input
-                  v-model="form.code"
-                  placeholder="请输入6位验证码"
-                  prefix="el-icon-verification"
-                  clearable
-                />
-              </el-col>
-              <el-col :span="10">
-                <el-button type="primary" :disabled="countdown > 0" @click="sendCode">
-                  {{ countdown > 0 ? `${countdown}秒后重发` : '获取验证码' }}
-                </el-button>
-              </el-col>
-            </el-row>
-          </el-form-item>
-          <el-form-item class="form-actions">
-            <el-button type="default" @click="goToSelectMethod">返回</el-button>
-            <el-button type="primary" @click="verifyCodeAndNext">下一步</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+        <!-- 2. 邮箱验证码验证（分支1） -->
+        <div v-if="currentStage === 'verifyCode'" class="form-container">
+          <el-form ref="codeFormRef" :model="form" :rules="codeRules" label-width="100px">
+            <el-form-item label="注册邮箱" prop="email">
+              <el-input v-model="form.email" placeholder="请输入绑定的邮箱" clearable />
+            </el-form-item>
+            <el-form-item label="验证码" prop="code">
+              <el-row :gutter="10">
+                <el-col :span="14">
+                  <el-input v-model="form.code" placeholder="请输入6位验证码" clearable />
+                </el-col>
+                <el-col :span="10">
+                  <el-button type="primary" :disabled="remaining < 60" @click="sendCode">
+                    {{ remaining < 60 ? `${remaining}秒后重发` : '获取验证码' }}
+                  </el-button>
+                </el-col>
+              </el-row>
+            </el-form-item>
+            <el-form-item class="form-actions">
+              <el-button type="default" @click="goToSelectMethod">返回</el-button>
+              <el-button type="primary" @click="verifyCodeAndNext">下一步</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
 
-      <!-- 3. 重置密码（共用页面，分支1和分支2都会进入） -->
-      <div v-if="currentStage === 'resetPassword'" class="form-container">
-        <el-form ref="passwordFormRef" :model="form" :rules="getPasswordRules" label-width="100px">
-          <!-- 只有选择「验证当前密码」时，才显示当前密码输入框 -->
-          <el-form-item v-if="verifyMethod === 'password'" label="当前密码" prop="currentPassword">
-            <el-input
-              v-model="form.currentPassword"
-              type="password"
-              placeholder="请输入您的当前密码"
-              prefix="el-icon-lock"
-            />
-          </el-form-item>
+        <!-- 3. 重置密码（共用页面，分支1和分支2都会进入） -->
+        <div v-if="currentStage === 'resetPassword'" class="form-container">
+          <el-form
+            ref="passwordFormRef"
+            :model="form"
+            :rules="getPasswordRules"
+            label-width="100px"
+          >
+            <!-- 只有选择「验证当前密码」时，才显示当前密码输入框 -->
+            <el-form-item
+              v-if="verifyMethod === 'password'"
+              label="当前密码"
+              prop="currentPassword"
+            >
+              <el-input
+                v-model="form.currentPassword"
+                type="password"
+                placeholder="请输入您的当前密码"
+                prefix="el-icon-lock"
+              />
+            </el-form-item>
 
-          <el-form-item label="新密码" prop="newPassword">
-            <el-input
-              v-model="form.newPassword"
-              type="password"
-              placeholder="8-20位，包含字母和数字"
-              prefix="el-icon-lock"
-              @input="checkPasswordStrength"
-            />
-            <!-- 密码强度提示 -->
-            <div class="password-strength mt-2">
-              <div class="strength-text">强度：{{ passwordStrengthText }}</div>
-              <div class="strength-bars">
-                <div class="strength-bar" :class="passwordStrength >= 1 ? 'strength-1' : ''"></div>
-                <div class="strength-bar" :class="passwordStrength >= 2 ? 'strength-2' : ''"></div>
-                <div class="strength-bar" :class="passwordStrength >= 3 ? 'strength-3' : ''"></div>
+            <el-form-item label="新密码" prop="newPassword">
+              <el-input
+                v-model="form.newPassword"
+                type="password"
+                placeholder="8-20位，包含字母和数字"
+                prefix="el-icon-lock"
+                @input="checkPasswordStrength"
+              />
+              <!-- 密码强度提示 -->
+              <div class="password-strength mt-2">
+                <div class="strength-text">强度：{{ passwordStrengthText }}</div>
+                <div class="strength-bars">
+                  <div
+                    class="strength-bar"
+                    :class="passwordStrength >= 1 ? 'strength-1' : ''"
+                  ></div>
+                  <div
+                    class="strength-bar"
+                    :class="passwordStrength >= 2 ? 'strength-2' : ''"
+                  ></div>
+                  <div
+                    class="strength-bar"
+                    :class="passwordStrength >= 3 ? 'strength-3' : ''"
+                  ></div>
+                </div>
               </div>
-            </div>
-          </el-form-item>
+            </el-form-item>
 
-          <el-form-item label="确认密码" prop="confirmPassword">
-            <el-input
-              v-model="form.confirmPassword"
-              type="password"
-              placeholder="请再次输入新密码"
-              prefix="el-icon-lock"
-            />
-          </el-form-item>
+            <el-form-item label="确认密码" prop="confirmPassword">
+              <el-input
+                v-model="form.confirmPassword"
+                type="password"
+                placeholder="请再次输入新密码"
+                prefix="el-icon-lock"
+              />
+            </el-form-item>
 
-          <el-form-item class="form-actions">
-            <el-button type="default" @click="goBack()">返回</el-button>
-            <el-button type="primary" @click="submitResetPassword">提交重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+            <el-form-item class="form-actions">
+              <el-button type="default" @click="goBack()">返回</el-button>
+              <el-button type="primary" @click="submitResetPassword">提交重置</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
 
-      <!-- 4. 重置成功（最终页面） -->
-      <div v-if="currentStage === 'success'" class="success-container text-center">
-        <el-icon class="success-icon"><CircleCheckFilled /></el-icon>
-        <h3 class="success-title">密码重置成功！</h3>
-        <p class="success-desc">您的密码已更新，请使用新密码登录</p>
-        <el-button type="primary" class="mt-4" @click="goToLogin">返回登录页</el-button>
-      </div>
-    </el-card>
+        <!-- 4. 重置成功（最终页面） -->
+        <div v-if="currentStage === 'success'" class="success-container text-center">
+          <el-icon class="success-icon"><CircleCheckFilled /></el-icon>
+          <h3 class="success-title">密码重置成功！</h3>
+          <p class="success-desc">您的密码已更新，请使用新密码登录</p>
+          <el-button type="primary" class="mt-4" @click="goToLogin">返回登录页</el-button>
+        </div>
+      </el-card>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { shallowRef, ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import BreadcrumbItem from './BreadcrumbItem.vue'
+import { useCountdown } from '@vueuse/core'
 
 // 核心状态：控制当前显示的页面阶段（无需步骤条，直接映射页面）
 type CurrentStage = 'selectMethod' | 'verifyCode' | 'resetPassword' | 'success'
@@ -131,7 +144,7 @@ const codeFormRef = ref<FormInstance>()
 const passwordFormRef = ref<FormInstance>()
 
 // 其他状态
-const countdown = ref(0)
+// const countdown = ref(0)
 const passwordStrength = ref(0)
 const passwordStrengthText = ref('弱')
 
@@ -255,6 +268,16 @@ const goToSelectMethod = (): void => {
 }
 
 // --------------- 核心功能逻辑 ---------------
+const countdown = shallowRef(60)
+const { remaining, start, reset } = useCountdown(countdown, {
+  onComplete() {
+    reset(countdown.value)
+  },
+  onTick() {
+    console.log('倒计时剩余时间：', remaining.value)
+  }
+})
+
 // 发送验证码
 const sendCode = (): void => {
   if (!form.email) {
@@ -262,11 +285,9 @@ const sendCode = (): void => {
     return
   }
   // 模拟发送验证码（实际项目中调用API）
-  countdown.value = 60
-  const timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) clearInterval(timer)
-  }, 1000)
+  if (remaining.value === 60) {
+    start()
+  }
   ElMessage.success('验证码已发送至您的邮箱')
 }
 
@@ -310,6 +331,7 @@ const goToLogin = (): void => {
   align-items: flex-start;
   background-color: #f5f7fa;
   padding: 20px;
+  margin-top: 20px;
 }
 
 /* 卡片样式（简洁居中） */

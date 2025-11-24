@@ -39,15 +39,6 @@
         </el-table-column>
       </el-table>
     </div>
-
-    <div class="flex justify-center">
-      <Pagination
-        :total="20"
-        :current-page="currentPage"
-        :page-size="pageSize"
-        @current-change="handleCurrentChange"
-      />
-    </div>
   </div>
 </template>
 
@@ -55,16 +46,6 @@
 import { ref } from 'vue'
 
 const searchCategory = ref('')
-
-// 分页相关状态
-const currentPage = ref(1)
-const pageSize = ref(10)
-// 当前页码改变
-const handleCurrentChange = (val: number): void => {
-  currentPage.value = val
-  // 滚动到顶部（可选）
-  // window.scrollTo({ top: 0, behavior: 'smooth' })
-}
 
 const categoryList = ref([
   { id: 1, name: '分类1', color: '#FF0000', icon: 'Folder' },

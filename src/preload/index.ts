@@ -20,5 +20,28 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * 删除认证Token
    */
-  removeToken: () => ipcRenderer.invoke('auth:removeToken')
+  removeToken: () => ipcRenderer.invoke('auth:removeToken'),
+  /**
+   * 登录操作
+   */
+  loginWindowResize: (channel: string, data: windowProps) => {
+    // 白名单验证，只允许特定的 IPC 通道
+    const allowedChannels = ['resize-window']
+    if (allowedChannels.includes(channel)) {
+      ipcRenderer.send(channel, data)
+    }
+  },
+  /**
+   * 注册事件监听器
+   */
+  on: (channel, listener) => {
+    // 白名单验证，只允许特定的 IPC 通道
+    const validChannels = ['login-failed']
+    if (validChannels.includes(channel)) {
+      // 避免直接暴露 listener，而是封装一层
+      ipcRenderer.on(channel, (event, ...args) => {
+        listener(event, ...args)
+      })
+    }
+  }
 })

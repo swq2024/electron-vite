@@ -40,7 +40,7 @@
         <div class="ml-5">
           <span class="menu-group-title"> 管理员 </span>
         </div>
-        <el-menu-item index="/panel">
+        <el-menu-item index="/admin">
           <el-icon><Avatar /></el-icon>
           <span>管理面板</span>
         </el-menu-item>

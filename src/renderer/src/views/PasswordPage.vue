@@ -28,7 +28,7 @@
 
     <div>
       <el-row :gutter="20">
-        <el-col v-for="item in passwordList" :key="item.id" :xs="24" :sm="12" :md="8" :lg="6">
+        <el-col v-for="item in paginatedPasswords" :key="item.id" :xs="24" :sm="12" :md="8" :lg="6">
           <el-card class="mb-4" shadow="hover">
             <template #header>
               <div class="flex items-center space-x-2">
@@ -102,14 +102,13 @@
 <script setup lang="ts">
 import Pagination from '@renderer/components/Pagination.vue'
 import { ElMessage } from 'element-plus'
-import { onMounted } from 'vue'
-import { ref, computed } from 'vue'
+import { shallowRef, ref, computed, onMounted } from 'vue'
 
 const searchPassword = ref('')
 
 // 分页相关状态
-const currentPage = ref(1)
-const pageSize = ref(10)
+const currentPage = shallowRef(1)
+const pageSize = shallowRef(10)
 // 计算分页后的密码列表
 const paginatedPasswords = computed(() => {
   const startIndex = (currentPage.value - 1) * pageSize.value
@@ -196,6 +195,17 @@ const passwordList = ref([
     strength: '中',
     favorite: true,
     type: 'LocationInformation'
+  },
+  {
+    id: 7,
+    name: 'Google',
+    category: '网站账户',
+    username: 'john.doe@gmail.com',
+    password: '123456789',
+    url: 'https://google.com',
+    strength: '强',
+    favorite: false,
+    type: 'Email'
   }
 ])
 interface PasswordItem {

@@ -9,12 +9,18 @@
     </div>
     <el-divider content-position="left">分析您当前账户的数据存储</el-divider>
 
-    <div>123</div>
-    <div>456</div>
+    <div>
+      {{ `当前网络状态：${isOnline ? 'online' : 'offline'}` }}
+    </div>
+    <div>some data</div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useOnline } from '@vueuse/core'
+
+const isOnline = useOnline()
+</script>
 
 <style scoped>
 :deep(.el-divider__text.is-left) {

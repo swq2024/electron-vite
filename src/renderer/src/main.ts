@@ -10,11 +10,13 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'virtual:uno.css'
+import { setupRouterGuard } from './router/guard'
 
 const app = createApp(App)
 const pinia = createPinia()
 app.use(pinia)
 app.use(router)
+setupRouterGuard(router)
 errorHandler(app)
 
 // 注册所有Element Plus图标

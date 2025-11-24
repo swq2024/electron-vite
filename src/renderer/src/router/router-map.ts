@@ -1,14 +1,29 @@
 import { RouteRecordRaw } from 'vue-router'
+import LoginPage from '@renderer/views/LoginPage.vue'
 import LandingPage from '@renderer/layouts/LandingPage.vue'
 import DataBoard from '@renderer/layouts/DataBoard.vue'
 import GeneralView from '@renderer/views/GeneralView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/login',
+    name: 'login',
+    component: LoginPage,
+    meta: {
+      title: '登录',
+      requiresAuth: false,
+      isLoginPage: true
+    }
+  },
+  {
     path: '/',
     name: 'home',
     component: LandingPage,
-    meta: { title: 'Home' },
+    meta: {
+      title: 'Home',
+      requiresAuth: true,
+      isLoginPage: false
+    },
     children: [
       {
         path: '',
@@ -78,6 +93,12 @@ const routes: RouteRecordRaw[] = [
             meta: { title: '主密码设置' }
           }
         ]
+      },
+      {
+        path: 'admin',
+        name: 'admin',
+        component: () => import('@renderer/views/AdminPage.vue'),
+        meta: { title: '管理员设置' }
       }
     ]
   },

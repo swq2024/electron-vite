@@ -1,4 +1,5 @@
 import { handleTokenOperations } from './auth'
+import { handleLoginOperation } from './login'
 import { handlePasswordOperation } from './password'
 // 导入其他所有处理器
 
@@ -14,6 +15,7 @@ export const registerIcpHandlers = (): void => {
   // 注册所有模块的 IPC 处理器
   handleTokenOperations()
   handlePasswordOperation()
+  handleLoginOperation()
 
   console.log('All IPC handlers registered.')
 }
