@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('user', () => {
   const isAuthenticated = computed(() => !!accessToken.value)
 
   // --- Actions ---
-  const setAuth = (_accessToken): void => {
+  const setAuth = (_accessToken: string): void => {
     accessToken.value = _accessToken
   }
 
@@ -28,11 +28,11 @@ export const useAuthStore = defineStore('user', () => {
     try {
       const response = await auth.loginApi(data)
       const { accessToken, refreshToken } = response.data.data
-      await window.electronAPI.saveTokens({ accessToken, refreshToken })
+      await window.authAPI.saveTokens({ accessToken, refreshToken })
 
       setAuth(accessToken)
 
-      return Promise.resolve(response.data.success)
+      return Promise.resolve(response.data.status)
     } catch (error) {
       await logout()
       return Promise.reject(error)
@@ -40,7 +40,7 @@ export const useAuthStore = defineStore('user', () => {
   }
 
   const logout = async (): Promise<void> => {
-    await window.electronAPI.removeToken()
+    await window.authAPI.removeToken()
 
     accessToken.value = null
     user.value = null
@@ -53,7 +53,7 @@ export const useAuthStore = defineStore('user', () => {
 
   const initialize = async (): Promise<void> => {
     try {
-      const storedToken = await window.electronAPI.getTokens()
+      const storedToken = await window.authAPI.getTokens()
       if (storedToken && storedToken.accessToken) {
         accessToken.value = storedToken.accessToken
         // 可以在这里调用一个API来获取用户信息并验证token有效性
@@ -75,7 +75,7 @@ export const useAuthStore = defineStore('user', () => {
     }
 
     isRefreshing.value = true // 设置刷新状态为true，防止递归调用
-    const tokens = await window.electronAPI.getTokens()
+    const tokens = await window.authAPI.getTokens()
 
     if (!tokens || !tokens.refreshToken) {
       await logout()
@@ -91,7 +91,7 @@ export const useAuthStore = defineStore('user', () => {
       )
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data
 
-      await window.electronAPI.saveTokens({
+      await window.authAPI.saveTokens({
         accessToken: newAccessToken,
         refreshToken: newRefreshToken
       })

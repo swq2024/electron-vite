@@ -67,3 +67,8 @@ TODO: 封装请求按钮【vue中如何优雅的处理按钮loading】 https://w
  * route.matched[route.matched.length - 1] 就是 route.matched[2]。
  * route.matched[2] 对应的就是 { path: 'session', name: 'session', meta: { title: '活动会话' }, ... } 这个对象。
  * 所以 currentRouteTitle.value 的结果就是 '活动会话'。即当前路由就是匹配链条的最后一环。
+
+
+确保动态生成的元素也能正确设置为不可拖拽：动态生成元素时主动添加 no-drag 类
+
+成功登陆后没有监听AT变化导致窗口大小没有切换x

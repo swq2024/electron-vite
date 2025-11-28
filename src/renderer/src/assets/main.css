@@ -1,6 +1,33 @@
 @import './base.css';
 
 body {
+  -webkit-app-region: drag; /* 全局默认可拖拽 */
+  margin: 0;
+  padding: 0;
+  height: 100vh;
   overflow: hidden;
   user-select: none;
+}
+
+/* 排除所有原生可交互元素避免正常交互 */
+button,
+input,
+select,
+textarea,
+a,
+[role='button'],
+[tabindex='0'] {
+  -webkit-app-region: no-drag;
+}
+
+/* 自定义的可操作组件（如自定义按钮、开关等），也需要添加 */
+.custom-button,
+.interactive-card,
+.dropdown-menu {
+  -webkit-app-region: no-drag;
+}
+
+/* 所有带 no-drag 类的元素不可拖拽 */
+.no-drag {
+  -webkit-app-region: no-drag !important; /* !important 确保优先级 */
 }

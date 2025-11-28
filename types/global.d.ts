@@ -17,10 +17,12 @@ interface windowProps {
 }
 
 interface Window {
-  electronAPI: {
+  authAPI: {
     saveTokens: (token: IToken) => Promise<IResult>
     getTokens: () => Promise<IToken | null>
     removeToken: () => Promise<void>
-    loginWindowResize: (channel: string, data: windowProps) => void
+    windowResize: (data: windowProps) => Promise<void>
+    minimizeWindow: () => Promise<void>
+    closeWindow: () => Promise<void>
   }
 }
