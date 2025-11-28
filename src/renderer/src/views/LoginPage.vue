@@ -70,9 +70,11 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@renderer/stores/auth'
-import { FormInstance } from 'element-plus'
+import { ElMessage, FormInstance } from 'element-plus'
 import { reactive, useTemplateRef } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const authStore = useAuthStore()
 
 const loginFormEl = useTemplateRef('loginForm')
@@ -88,16 +90,17 @@ const rules = {
 
 const handleLogin = async (formEl: FormInstance | undefined): Promise<void> => {
   if (!formEl) return
-  await formEl.validate(async (valid, fields) => {
+  await formEl.validate(async (valid) => {
     if (valid) {
       try {
         const response = await authStore.handleLogin(formData)
-        console.log(response) // true
+        if (response) {
+          ElMessage.success('登录成功')
+          router.push('/')
+        }
       } catch (error) {
         console.error(error)
       }
-    } else {
-      console.log('error submit!', fields)
     }
   })
 }

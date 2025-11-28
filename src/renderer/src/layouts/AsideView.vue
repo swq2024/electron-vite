@@ -1,5 +1,5 @@
 <template>
-  <div class="aside-container" :style="{ width: appStore.asideWidth }">
+  <div class="aside-container no-drag" :style="{ width: appStore.asideWidth }">
     <el-scrollbar class="aside-scrollbar">
       <el-menu
         :collapse="isCollapse"

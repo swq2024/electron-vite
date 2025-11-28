@@ -16,11 +16,9 @@ contextBridge.exposeInMainWorld('authAPI', {
   },
   /**
    * 获取认证Token
-   * @returns {Promise<{ accessToken: string; refreshToken: string }>} 返回一个Promise对象，用于等待主进程的响应
+   * @returns {Promise<IToken | null>} 返回一个Promise对象，用于等待主进程的响应
    */
-  getTokens: (): Promise<{ accessToken: string; refreshToken: string }> => {
-    return ipcRenderer.invoke('auth:getTokens')
-  },
+  getTokens: (): Promise<IToken | null> => ipcRenderer.invoke('auth:getTokens'),
   /**
    * 删除认证Token
    */

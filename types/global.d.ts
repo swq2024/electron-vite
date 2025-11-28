@@ -20,7 +20,7 @@ interface Window {
   authAPI: {
     saveTokens: (token: IToken) => Promise<IResult>
     getTokens: () => Promise<IToken | null>
-    removeToken: () => Promise<void>
+    removeTokens: () => Promise<void>
     windowResize: (data: windowProps) => Promise<void>
     minimizeWindow: () => Promise<void>
     closeWindow: () => Promise<void>

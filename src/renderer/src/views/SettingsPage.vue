@@ -9,7 +9,7 @@
     </div>
     <el-divider content-position="left"> 查看您对应用的个性化设置 </el-divider>
 
-    <div>
+    <div class="no-drag">
       <RouterView />
     </div>
   </div>

@@ -18,7 +18,7 @@ export const createPermissionGuard = (router: Router): void => {
       try {
         const authStore = useAuthStore()
         const isLoggedIn = !!authStore.accessToken
-
+        // 我既然使用safeStorage进行本地存储并且是Electron应用，
         if (isLoggedIn && to.meta.isLoginPage && !from.meta.requiresAuth) {
           next('/')
           return
@@ -29,12 +29,12 @@ export const createPermissionGuard = (router: Router): void => {
           return
         }
 
-        // if (!hasGetUserInfo.value) {
-        //   const userInfo = await authStore.getProfile()
-        //   console.log('获取用户信息：', userInfo)
-        //   // authStore.setUser(userInfo)
-        //   hasGetUserInfo.value = true
-        // }
+        if (!hasGetUserInfo.value) {
+          const userInfo = await authStore.getProfile()
+          console.log('获取用户信息：', userInfo)
+          // authStore.setUser(userInfo)
+          hasGetUserInfo.value = true
+        }
 
         next()
       } catch (error) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-between items-center h-[60px] bg-slate-500">
+  <div class="flex justify-between items-center h-[69px] header-group">
     <div class="flex justify-start items-center ml5 space-x-6">
       <div class="flex items-center">
         <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 640 640">
@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div>
+    <div class="no-drag">
       <el-avatar class="mr-3" icon="UserFilled" @error="errorHandler" />
     </div>
   </div>
@@ -22,4 +22,8 @@
 const errorHandler = (): boolean => true
 </script>
 
-<style scoped></style>
+<style scoped>
+.header-group {
+  background-color: var(--el-menu-bg-color); /* 与菜单背景一致 */
+}
+</style>
