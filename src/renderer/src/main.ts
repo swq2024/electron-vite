@@ -17,11 +17,9 @@ const app = createApp(App)
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
-// 恢复登录态
-const authStore = useAuthStore()
-await authStore.initAuth()
-
 errorHandler(app)
+setupRouterGuard(router)
+app.use(router)
 
 // 注册所有Element Plus图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
@@ -31,6 +29,5 @@ app.use(ElementPlus, {
   size: 'default',
   zIndex: 3000
 })
-setupRouterGuard(router)
-app.use(router)
+
 app.mount('#app')

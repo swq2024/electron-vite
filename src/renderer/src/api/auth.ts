@@ -7,5 +7,7 @@ type LoginParams = {
 
 export default {
   /**登录 */
-  loginApi: (data: LoginParams) => server.post('/auth/login', data)
+  loginApi: (data: LoginParams): Promise<ILoginResponse> => server.post('/auth/login', data),
+  /**登出 */
+  logoutApi: (): Promise<ILogoutResponse> => server.post('/auth/logout')
 }

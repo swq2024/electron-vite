@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import auth from '@renderer/api/auth'
-import users from '@renderer/api/user'
 import servers from '@renderer/utils/request'
+import { ElMessage } from 'element-plus'
+import users from '@renderer/api/user'
+import { AxiosError } from 'axios'
 // import { jwtDecode } from 'jwt-decode'
 // import type { JwtPayload } from '../types/jwt'
 
@@ -11,8 +13,8 @@ export const useAuthStore = defineStore(
   () => {
     // --- State ---
     const accessToken = ref<string | null>(null) // 存储accessToken
-    const user = ref<IUser | null>(null)
     const isRefreshing = ref<boolean>(false)
+    const userInfo = ref<IUser | null>(null)
 
     // --- Getters ---
     const isAuthenticated = computed(() => !!accessToken.value)
@@ -21,9 +23,8 @@ export const useAuthStore = defineStore(
     const setToken = (_accessToken: string): void => {
       accessToken.value = _accessToken
     }
-
-    const setUser = (_user): void => {
-      user.value = _user
+    const setUserInfo = (_user): void => {
+      userInfo.value = _user
     }
 
     const initAuth = async (): Promise<void> => {
@@ -31,45 +32,55 @@ export const useAuthStore = defineStore(
         const storedToken = await window.authAPI.getTokens()
         if (storedToken) {
           accessToken.value = storedToken.accessToken
-          // 可以在这里调用一个API来获取用户信息并验证token有效性
-          // try {
-          // await fetchUserProfile();
-          // } catch (error) {
-          // token 已过期或无效，则退出登录
-          // await logout()
-          // }
+          try {
+            await fetchUserProfile()
+          } catch (error) {
+            console.error('Error fetching user profile:', error)
+          }
         }
       } catch (error) {
         console.error('Error initializing user store:', error)
       }
     }
 
-    const handleLogin = async (data): Promise<boolean> => {
+    const handleLogin = async (data: { username: string; password: string }): Promise<boolean> => {
       try {
         const response = await auth.loginApi(data)
-        const { accessToken, refreshToken } = response.data.data
+        const { accessToken, refreshToken } = response.data
 
         await window.authAPI.saveTokens({ accessToken, refreshToken })
 
         setToken(accessToken)
 
-        return Promise.resolve(response.data.status)
-      } catch (error) {
-        await logout()
-        return Promise.reject(error)
+        await fetchUserProfile()
+
+        return true
+      } catch (error: unknown) {
+        if (error instanceof AxiosError) {
+          console.error('Error logging in:', error)
+          ElMessage.error(error?.response?.data?.message)
+        }
+        return false
       }
     }
 
     const logout = async (): Promise<void> => {
-      await window.authAPI.removeTokens()
+      try {
+        await window.authAPI.removeTokens()
 
-      accessToken.value = null
-      user.value = null
-      isRefreshing.value = false
+        const response = await auth.logoutApi()
 
-      // router.push('/login')
+        accessToken.value = null
+        userInfo.value = null
+        isRefreshing.value = false
 
-      console.log('User logged out')
+        ElMessage.success(response?.message)
+      } catch (error: unknown) {
+        if (error instanceof AxiosError) {
+          console.error('Error logging out:', error)
+          ElMessage.error(error?.response?.data?.message)
+        }
+      }
     }
 
     const refreshAccessToken = async (): Promise<string | null> => {
@@ -81,7 +92,6 @@ export const useAuthStore = defineStore(
       const tokens = await window.authAPI.getTokens()
 
       if (!tokens || !tokens.refreshToken) {
-        await logout()
         throw new Error('No refresh token available.')
       }
       try {
@@ -92,7 +102,7 @@ export const useAuthStore = defineStore(
           },
           { isRefreshTokenRequest: true }
         )
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data
 
         await window.authAPI.saveTokens({
           accessToken: newAccessToken,
@@ -103,17 +113,20 @@ export const useAuthStore = defineStore(
 
         return newAccessToken
       } catch (error) {
-        await logout() // 如果刷新失败，则退出登录
-        throw error // 抛出错误，以便调用者可以处理
+        console.error('Error refreshing access token:', error)
+        throw error
       } finally {
         isRefreshing.value = false
       }
     }
 
-    const getProfile = async (): Promise<void> => {
+    const fetchUserProfile = async (): Promise<IUser | void> => {
+      if (userInfo.value?.username) return userInfo.value
+      if (!accessToken.value) throw new Error('No access token available.')
       try {
         const response = await users.getProfile()
-        return response.data.data
+        setUserInfo(response.data.user)
+        return response.data.user
       } catch (error) {
         console.error('Error fetching user profile:', error)
       }
@@ -121,22 +134,21 @@ export const useAuthStore = defineStore(
 
     return {
       accessToken,
-      user,
+      userInfo,
       isRefreshing,
       isAuthenticated,
       setToken,
-      setUser,
       handleLogin,
       logout,
       initAuth,
       refreshAccessToken,
-      getProfile
+      fetchUserProfile
+    }
+  },
+  {
+    persist: {
+      pick: ['userInfo'],
+      storage: sessionStorage
     }
   }
-  // {
-  //   persist: {
-  //     pick: ['accessToken'],
-  //     storage: sessionStorage
-  //   }
-  // }
 )

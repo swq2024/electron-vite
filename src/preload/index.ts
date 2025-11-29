@@ -22,7 +22,7 @@ contextBridge.exposeInMainWorld('authAPI', {
   /**
    * 删除认证Token
    */
-  removeToken: (): Promise<void> => {
+  removeTokens: (): Promise<void> => {
     return ipcRenderer.invoke('auth:removeToken')
   },
   /**

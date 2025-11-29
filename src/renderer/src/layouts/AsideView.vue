@@ -37,13 +37,19 @@
           <el-icon><Setting /></el-icon>
           <span>应用设置</span>
         </el-menu-item>
-        <div class="ml-5">
-          <span class="menu-group-title"> 管理员 </span>
+        <div v-if="isAdmin">
+          <div class="ml-5">
+            <span class="menu-group-title"> 管理员 </span>
+          </div>
+          <el-menu-item index="/admin">
+            <el-icon><Avatar /></el-icon>
+            <span>管理面板</span>
+          </el-menu-item>
+          <el-menu-item index="/changelog">
+            <el-icon><HelpFilled /></el-icon>
+            <span>系统更新</span>
+          </el-menu-item>
         </div>
-        <el-menu-item index="/admin">
-          <el-icon><Avatar /></el-icon>
-          <span>管理面板</span>
-        </el-menu-item>
       </el-menu>
     </el-scrollbar>
   </div>
@@ -51,12 +57,16 @@
 
 <script setup lang="ts">
 import { useAppStore } from '@renderer/stores/app'
+import { useAuthStore } from '@renderer/stores/auth'
 import { ref, computed } from 'vue'
 import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 
-const appStore = useAppStore()
-const router = useRouter()
 const route = useRoute()
+const router = useRouter()
+
+const appStore = useAppStore()
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.userInfo?.role === 'admin')
 const isCollapse = computed(() => !(appStore.asideWidth === '180px'))
 const handleOpen = (): void => {}
 const handleClose = (): void => {}

@@ -28,22 +28,29 @@
 
     <div>
       <el-row :gutter="20">
-        <el-col v-for="item in paginatedPasswords" :key="item.id" :xs="24" :sm="12" :md="8" :lg="6">
+        <el-col
+          v-for="item in pwdStore.passwordList"
+          :key="item.id"
+          :xs="24"
+          :sm="12"
+          :md="8"
+          :lg="6"
+        >
           <el-card class="mb-4" shadow="hover">
             <template #header>
               <div class="flex items-center space-x-2">
                 <el-icon :size="28" color="skyblue">
-                  <component :is="item.type"></component>
+                  <component :is="item.category.icon"></component>
                 </el-icon>
                 <div>
-                  <p class="item_title text-sm font-bold">{{ item.name }}</p>
-                  <p class="item_category text-xs text-gray-500">{{ item.category }}</p>
+                  <p class="item_title text-sm font-bold">{{ item.title }}</p>
+                  <p class="item_category text-xs text-gray-500">{{ item.category.name }}</p>
                 </div>
               </div>
 
-              <div @click="toggleFavorite(item.id)">
+              <div @click="debounceToggleFavorite(item)">
                 <el-button
-                  v-if="item.favorite"
+                  v-if="item.isFavorite"
                   text
                   icon="StarFilled"
                   class="is-active"
@@ -89,9 +96,9 @@
       </el-row>
       <div class="flex justify-center">
         <Pagination
-          :total="20"
-          :current-page="currentPage"
-          :page-size="pageSize"
+          :total="pwdStore.pagination!.total"
+          :current-page="pwdStore.currentPage"
+          :page-size="pwdStore.pageSize"
           @current-change="handleCurrentChange"
         />
       </div>
@@ -101,142 +108,33 @@
 
 <script setup lang="ts">
 import Pagination from '@renderer/components/Pagination.vue'
+import { usePwdStore } from '@renderer/stores/password'
+import { useDebounceFn } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
-import { shallowRef, ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+
+const pwdStore = usePwdStore()
 
 const searchPassword = ref('')
 
-// 分页相关状态
-const currentPage = shallowRef(1)
-const pageSize = shallowRef(10)
-// 计算分页后的密码列表
-const paginatedPasswords = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize.value
-  const endIndex = startIndex + pageSize.value
-  return passwordList.value.slice(startIndex, endIndex)
-})
-
-// const handleSizeChange = (val: number): void => {
-//   pageSize.value = val
-//   currentPage.value = 1 // 重置页码
-// }
-
-// 当前页码改变
-const handleCurrentChange = (val: number): void => {
-  currentPage.value = val
-  // 滚动到顶部（可选）
-  // window.scrollTo({ top: 0, behavior: 'smooth' })
+const handleCurrentChange = async (val: number): Promise<void> => {
+  pwdStore.currentPage = val
+  await pwdStore.getPasswordList()
 }
 
-// 目前使用假数据
-const passwordList = ref([
-  {
-    id: 1,
-    name: 'GitHub',
-    category: '个人帐号',
-    username: 'john.doe',
-    password: '123456789',
-    url: 'https://github.com',
-    strength: '强',
-    favorite: false,
-    type: 'User'
-  },
-  {
-    id: 2,
-    name: 'Amazon',
-    category: '购物帐号',
-    username: 'john.doe@example.com',
-    password: '123456789',
-    url: 'https://amazon.com',
-    strength: '中',
-    favorite: true,
-    type: 'Shop'
-  },
-  {
-    id: 3,
-    name: '公司邮箱',
-    category: '工作帐号',
-    username: 'john.doe@company.com',
-    password: '123456789',
-    url: 'https://mail.company.com',
-    strength: '强',
-    favorite: false,
-    type: 'OfficeBuilding'
-  },
-  {
-    id: 4,
-    name: 'Steam',
-    category: '游戏帐号',
-    username: 'doe_gamer',
-    password: '123456789',
-    url: 'https://store.steampowered.com',
-    strength: '强',
-    favorite: true,
-    type: 'Box'
-  },
-  {
-    id: 5,
-    name: 'Apple ID',
-    category: '应用程序',
-    username: 'john.doe@icloud.com',
-    password: '123456789',
-    url: 'https://appleid.apple.com',
-    strength: '强',
-    favorite: false,
-    type: 'Phone'
-  },
-  {
-    id: 6,
-    name: 'Facebook',
-    category: '网站账户',
-    username: 'john.doe.567',
-    password: '123456789',
-    url: 'https://facebook.com',
-    strength: '中',
-    favorite: true,
-    type: 'LocationInformation'
-  },
-  {
-    id: 7,
-    name: 'Google',
-    category: '网站账户',
-    username: 'john.doe@gmail.com',
-    password: '123456789',
-    url: 'https://google.com',
-    strength: '强',
-    favorite: false,
-    type: 'Email'
-  }
-])
-interface PasswordItem {
-  id: number
-  name: string
-  category: string
-  username: string
-  password: string
-  url: string
-  strength: string
-  favorite: boolean
-  type: string
-  showPassword: boolean
-}
-onMounted(() => {
-  passwordList.value = passwordList.value.map((item) => ({
-    ...item,
-    showPassword: false
-  }))
+onMounted(async () => {
+  await pwdStore.getPasswordList()
 })
-const togglePasswordVisibility = (item: PasswordItem): void => {
+const togglePasswordVisibility = (item): void => {
   item.showPassword = !item.showPassword
 }
-const toggleFavorite = (id: number): void => {
-  const item = passwordList.value.find((item) => item.id === id)
+const toggleFavorite = async (item): Promise<void> => {
   if (item) {
-    // 实际请求后端接口更新数据库favorite字段, 并更新本地数据
-    item.favorite = !item.favorite
-    ElMessage.success(`${item.name} ${item.favorite ? '已添加到收藏夹' : '已从收藏夹移除'}`)
+    await pwdStore.toggleFavorite(item.id)
+    ElMessage.success(`${item.title} ${item.isFavorite ? '已从收藏夹移除' : '已添加到收藏夹'}`)
   }
 }
+const debounceToggleFavorite = useDebounceFn(toggleFavorite, 200)
 const copyUsername = (username: string): void => {
   navigator.clipboard
     .writeText(username)

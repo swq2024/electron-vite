@@ -99,6 +99,12 @@ const routes: RouteRecordRaw[] = [
         name: 'admin',
         component: () => import('@renderer/views/AdminPage.vue'),
         meta: { title: '管理员设置' }
+      },
+      {
+        path: 'changelog',
+        name: 'changelog',
+        component: () => import('@renderer/views/ChangelogPage.vue'),
+        meta: { title: '系统更新' }
       }
     ]
   },

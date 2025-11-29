@@ -8,7 +8,7 @@
         <el-aside :width="appStore.asideWidth" class="transition-all transition-duration-200">
           <AsideView />
         </el-aside>
-        <el-main class="main-content">
+        <el-main class="main-content no-drag">
           <RouterView />
         </el-main>
       </el-container>

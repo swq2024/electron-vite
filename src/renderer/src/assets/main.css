@@ -21,10 +21,8 @@ a,
 }
 
 /* 自定义的可操作组件（如自定义按钮、开关等），也需要添加 */
-.custom-button,
-.interactive-card,
-.dropdown-menu {
-  -webkit-app-region: no-drag;
+.el-input__suffix {
+  -webkit-app-region: no-drag !important;
 }
 
 /* 所有带 no-drag 类的元素不可拖拽 */

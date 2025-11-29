@@ -1,22 +1,6 @@
 <template>
   <div class="login-page">
-    <div class="flex flex-row justify-end items-center">
-      <div class="p2.5 flex space-x-1">
-        <button class="window-btn minimize-btn no-drag" @click="handleMinimize">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M6 13v-2h12v2z" />
-          </svg>
-        </button>
-        <button class="window-btn close-btn no-drag" @click="handleClose">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="m8.382 17.025l-1.407-1.4L10.593 12L6.975 8.4L8.382 7L12 10.615L15.593 7L17 8.4L13.382 12L17 15.625l-1.407 1.4L12 13.41z"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
+    <Operation />
     <div class="flex flex-col items-center pt-12">
       <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24">
         <path
@@ -34,6 +18,7 @@
           label-position="top"
           hide-required-asterisk
           :show-message="false"
+          @keyup.enter="handleLogin(loginFormEl)"
         >
           <el-form-item label="Username" prop="username">
             <el-input
@@ -58,7 +43,11 @@
             <el-button type="text" @click="handleRegister">立即注册</el-button>
           </div>
           <el-form-item>
-            <el-button color="#626aef" style="width: 240px" @click="handleLogin(loginFormEl)"
+            <el-button
+              color="#626aef"
+              style="width: 240px"
+              :loading="loading"
+              @click="handleLogin(loginFormEl)"
               >登录</el-button
             >
           </el-form-item>
@@ -69,14 +58,17 @@
 </template>
 
 <script setup lang="ts">
+import Operation from '@renderer/components/Operation.vue'
 import { useAuthStore } from '@renderer/stores/auth'
 import { ElMessage, FormInstance } from 'element-plus'
-import { reactive, useTemplateRef } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, ref, useTemplateRef } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
+const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
+const loading = ref(false)
 const loginFormEl = useTemplateRef('loginForm')
 
 const formData = reactive({
@@ -88,18 +80,21 @@ const rules = {
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
-const handleLogin = async (formEl: FormInstance | undefined): Promise<void> => {
+const handleLogin = (formEl: FormInstance | undefined): void => {
   if (!formEl) return
-  await formEl.validate(async (valid) => {
+  formEl.validate(async (valid) => {
     if (valid) {
+      loading.value = true
       try {
-        const response = await authStore.handleLogin(formData)
-        if (response) {
+        const status = await authStore.handleLogin(formData)
+        if (status) {
           ElMessage.success('登录成功')
-          router.push('/')
+
+          const redirect = route.query.redirect as string
+          router.push(redirect || '/')
         }
-      } catch (error) {
-        console.error(error)
+      } finally {
+        loading.value = false
       }
     }
   })
@@ -107,14 +102,6 @@ const handleLogin = async (formEl: FormInstance | undefined): Promise<void> => {
 
 const handleRegister = (): void => {
   console.log('register!')
-}
-
-const handleMinimize = async (): Promise<void> => {
-  await window.authAPI.minimizeWindow()
-}
-
-const handleClose = async (): Promise<void> => {
-  await window.authAPI.closeWindow()
 }
 </script>
 
@@ -129,18 +116,5 @@ const handleClose = async (): Promise<void> => {
 
 .font-family {
   font-family: 'Maple Mono';
-}
-
-/* 窗口控制按钮样式 */
-.window-btn {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 4px;
-}
-.window-btn:hover {
-  color: slategrey;
 }
 </style>

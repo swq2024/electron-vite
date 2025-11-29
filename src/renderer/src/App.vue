@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useDebounceFn } from '@vueuse/core'
-import { useAuthStore } from './stores/auth'
 
 const route = useRoute()
-const authStore = useAuthStore()
 
 const handleResize = async (newPath: string): Promise<void> => {
   const isLoginPage = newPath === '/login'
@@ -16,18 +13,22 @@ const handleResize = async (newPath: string): Promise<void> => {
     resizable: !isLoginPage
   })
 }
-const debouncedResize = useDebounceFn(handleResize, 100)
 watch(
   () => route.path,
-  (newPath) => {
-    debouncedResize(newPath)
+  (newPath, oldPath) => {
+    // 检查新的路径是否是登录页
+    const isNewLogin = newPath === '/login'
+    // 检查旧的路径是否是登录页
+    const wasOldLogin = oldPath === '/login'
+
+    // 只有当登录状态发生切换时才触发窗口调整
+    // (即：进入登录页 OR 离开登录页)
+    if (isNewLogin !== wasOldLogin) {
+      handleResize(newPath)
+    }
   },
   { immediate: true } // 立即执行一次（应用启动时初始化窗口大小）
 )
-
-onMounted(async () => {
-  await authStore.initAuth()
-})
 </script>
 
 <template>

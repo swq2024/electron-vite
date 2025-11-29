@@ -96,7 +96,7 @@ servers.interceptors.response.use(
     const requestKey = getRequestKey(response.config)
     pendingRequests.delete(requestKey) // 正确删除对应的pending请求控制器，防止内存泄漏
     // 对响应数据做点什么
-    return response
+    return response.data
   },
   async (error) => {
     const requestKey = error.config ? getRequestKey(error.config) : ''
@@ -155,7 +155,7 @@ servers.interceptors.response.use(
         // 如果刷新token失败，处理队列中的请求
         processQueue(refreshError, null)
 
-        await authStore.logout() // 清除用户信息，跳转到登录页面
+        // await authStore.logout() // 清除用户信息，跳转到登录页面
 
         return Promise.reject(refreshError)
       }
