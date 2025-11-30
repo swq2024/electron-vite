@@ -6,14 +6,22 @@
       </div>
 
       <div>
-        <el-button type="primary" plain>全部恢复</el-button>
-        <el-button type="danger" plain>清空回收站</el-button>
+        <el-button type="warning" plain @click="handleRestorePasswords(selectedPasswordIds)"
+          >批量恢复</el-button
+        >
+        <el-button type="danger" plain @click="handleForceDeletePasswords(selectedPasswordIds)"
+          >批量删除</el-button
+        >
       </div>
     </div>
     <el-divider content-position="left">查看您暂时删除的密码</el-divider>
 
     <div>
-      <el-table :data="trashData">
+      <el-table
+        :data="trashStore.trashList"
+        @selection-change="handleSelectionChange"
+        @select-all="handleSelectAll"
+      >
         <el-table-column type="selection" width="35" />
         <el-table-column prop="title" label="标题/用户名" align="center">
           <template #default="{ row }">
@@ -23,23 +31,25 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="lastUsedAt" label="最后使用时间" align="center" />
+        <el-table-column prop="lastUsedAt" label="最后使用时间" align="center">
+          <template #default="{ row }">
+            {{ row.lastUsedAt ? row.lastUsedAt : 'null' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="deletedAt" label="删除时间" align="center" />
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="160">
           <template #default="{ row }">
             <el-button
               text
               type="warning"
-              size="small"
               icon="RefreshLeft"
-              @click="handleRestore(row)"
+              @click="handleRestorePassword(row.id)"
             ></el-button>
             <el-button
               text
               type="danger"
-              size="small"
               icon="Close"
-              @click="deletePermanently(row)"
+              @click="handleForceDeletePassword(row.id)"
             ></el-button>
           </template>
         </el-table-column>
@@ -58,83 +68,91 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, ref } from 'vue'
 import Pagination from '@renderer/components/Pagination.vue'
+import { useTrashStore } from '@renderer/stores/trash'
 
-const trashData = ref([
-  {
-    title: 'Google',
-    username: 'user1',
-    deletedAt: '2023-01-01',
-    lastUsedAt: '2023-01-02'
-  },
-  {
-    title: 'Facebook',
-    username: 'user2',
-    deletedAt: '2023-01-03',
-    lastUsedAt: '2023-01-04'
-  },
-  {
-    title: 'Twitter',
-    username: 'user3',
-    deletedAt: '2023-01-05',
-    lastUsedAt: '2023-01-06'
-  },
-  {
-    title: 'Instagram',
-    username: 'user4',
-    deletedAt: '2023-01-07',
-    lastUsedAt: '2023-01-08'
-  },
-  {
-    title: 'LinkedIn',
-    username: 'user5',
-    deletedAt: '2023-01-09',
-    lastUsedAt: '2023-01-10'
-  },
-  {
-    title: 'Pinterest',
-    username: 'user6',
-    deletedAt: '2023-01-11',
-    lastUsedAt: '2023-01-12'
-  },
-  {
-    title: 'YouTube',
-    username: 'user7',
-    deletedAt: '2023-01-13',
-    lastUsedAt: '2023-01-14'
-  },
-  {
-    title: 'TikTok',
-    username: 'user8',
-    deletedAt: '2023-01-15',
-    lastUsedAt: '2023-01-16'
-  },
-  {
-    title: 'Snapchat',
-    username: 'user9',
-    deletedAt: '2023-01-17',
-    lastUsedAt: '2023-01-18'
-  },
-  {
-    title: 'WhatsApp',
-    username: 'user10',
-    deletedAt: '2023-01-19',
-    lastUsedAt: '2023-01-20'
-  },
-  {
-    title: 'Telegram',
-    username: 'user11',
-    deletedAt: '2023-01-21',
-    lastUsedAt: '2023-01-22'
-  }
-])
-const handleRestore = (row) => {
-  ElMessage.success('恢复成功')
+const trashStore = useTrashStore()
+onMounted(async () => {
+  await trashStore.fetchTrashedPassword()
+})
+
+const selectedPasswordIds = ref([])
+const handleSelectionChange = (items): void => {
+  selectedPasswordIds.value = items.map((item) => item.id)
 }
-const deletePermanently = (row) => {
-  ElMessage.success('永久删除成功')
+const handleSelectAll = (items): void => {
+  ElMessage.warning('请谨慎操作执行后续全选操作')
+}
+
+const handleRestorePassword = async (id: string): Promise<void> => {
+  try {
+    await trashStore.restorePassword(id)
+    ElMessage.success('恢复成功')
+  } catch (error) {
+    ElMessage.error('恢复失败')
+    console.error(error)
+  }
+}
+
+const handleRestorePasswords = async (passwordIds: string[]): Promise<void> => {
+  if (!passwordIds || passwordIds.length === 0) {
+    ElMessage.warning('请选择要恢复的密码')
+    return
+  }
+
+  try {
+    await trashStore.restorePasswords(passwordIds)
+    ElMessage.success('批量恢复成功')
+  } catch (error) {
+    ElMessage.error('批量恢复失败')
+    console.error(error)
+  }
+}
+
+const handleForceDeletePassword = (id: string): void => {
+  ElMessageBox.confirm('确定要彻底删除吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(async () => {
+      await trashStore.forceDeletePassword(id)
+      ElMessage.success('彻底删除成功')
+    })
+    .catch((error) => {
+      if (error === 'cancel') {
+        ElMessage.info('取消删除')
+      } else {
+        ElMessage.error('彻底删除失败')
+        console.error(error)
+      }
+    })
+}
+
+const handleForceDeletePasswords = (passwordIds: string[]): void => {
+  if (!passwordIds || passwordIds.length === 0) {
+    ElMessage.warning('请选择要彻底删除的密码')
+    return
+  }
+  ElMessageBox.confirm('确定要彻底删除吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(async () => {
+      await trashStore.forceDeletePasswords(passwordIds)
+      ElMessage.success('彻底删除成功')
+    })
+    .catch((error) => {
+      if (error === 'cancel') {
+        ElMessage.info('取消删除')
+      } else {
+        ElMessage.error('彻底删除失败')
+        console.error(error)
+      }
+    })
 }
 
 // 分页相关状态

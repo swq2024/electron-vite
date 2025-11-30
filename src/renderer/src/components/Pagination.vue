@@ -98,10 +98,4 @@ const handleCurrentChange = (val): void => {
   background-color: #3b82f6;
   color: #ffffff;
 }
-
-.pagination :deep(.el-pagination__editor) {
-  background-color: #1f2937;
-  border-color: #374151;
-  color: #d1d5db;
-}
 </style>

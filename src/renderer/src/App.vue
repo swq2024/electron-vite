@@ -21,9 +21,13 @@ watch(
     // 检查旧的路径是否是登录页
     const wasOldLogin = oldPath === '/login'
 
+    // 判断是否是首次初始化(未退出登录,尝试恢复登录态)
+    const isInit = oldPath === undefined
     // 只有当登录状态发生切换时才触发窗口调整
-    // (即：进入登录页 OR 离开登录页)
-    if (isNewLogin !== wasOldLogin) {
+    // A. 首次初始化 (无论当前在什么页面，都要根据当前页面设置一次大小)
+    //    OR
+    // B. 登录状态发生切换 (从登录页变为主页，或反之)
+    if (isInit || isNewLogin !== wasOldLogin) {
       handleResize(newPath)
     }
   },

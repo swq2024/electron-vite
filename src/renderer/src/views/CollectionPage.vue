@@ -1,223 +1,163 @@
 <template>
-  <div class="collection-page">
-    <!-- 顶部标题区 -->
-    <div class="page-header">
+  <div class="collection-page space-y-5">
+    <div class="flex justify-between items-center">
       <div>
-        <h2>我的收藏</h2>
+        <h2 class="font-bold">我的收藏</h2>
       </div>
       <div>
-        <el-button type="primary" plain @click="handleManageCollection">整理收藏</el-button>
+        <el-button type="primary" plain icon="Sort" @click="handleManageCollection">
+          整理排序
+        </el-button>
       </div>
     </div>
-    <el-divider content-position="left">查看您平时使用频次较高的密码</el-divider>
 
-    <!-- 密码卡片区 -->
-    <div v-if="collectedPasswords.length > 0" class="password-cards">
-      <el-card
-        v-for="item in collectedPasswords"
-        :key="item.id"
-        class="password-card"
-        shadow="hover"
-        :class="{ collected: true }"
-      >
-        <div class="card-header">
-          <!-- 图标 -->
-          <el-icon class="card-icon"><component :is="item.icon" /></el-icon>
-          <!-- 名称 + 分类 -->
-          <div>
-            <h3>{{ item.name }}</h3>
-            <el-tag size="small">{{ item.category }}</el-tag>
-          </div>
-          <!-- 收藏星标（已收藏，绿色） -->
-          <el-icon
-            class="star-icon"
-            style="color: #52c41a; cursor: pointer"
-            @click="handleToggleCollect(item)"
-            ><StarFilled
-          /></el-icon>
-        </div>
-        <div class="card-body">
-          <!-- 用户名 -->
-          <div class="field">
-            <label>用户名</label>
-            <span>{{ item.username }}</span>
-          </div>
-          <!-- 密码（隐藏+查看） -->
-          <div class="field">
-            <label>密码</label>
-            <el-input type="password" :value="item.password" show-password disabled />
-          </div>
-          <!-- 复制操作 -->
-          <div class="card-actions">
-            <el-icon class="action-icon" style="cursor: pointer" @click="handleCopy(item.password)"
-              ><DocumentCopy
-            /></el-icon>
-          </div>
-        </div>
-      </el-card>
+    <el-divider content-position="left">最常用的账号密码触手可及</el-divider>
+
+    <div v-if="collectStroe.collections.length > 0">
+      <el-row :gutter="20">
+        <el-col
+          v-for="item in collectStroe.collections"
+          :key="item.id"
+          :xs="24"
+          :sm="12"
+          :md="8"
+          :lg="6"
+        >
+          <el-card
+            class="mb-4 relative transition-all duration-300 hover:-translate-y-1 hover:shadow-lg border-t-4 border-t-yellow-400"
+            shadow="hover"
+            :body-style="{ padding: '0px', cursor: 'pointer' }"
+          >
+            <div class="p-4 bg-gray-50 flex justify-between items-start">
+              <div class="flex items-center gap-3">
+                <el-avatar shape="square" :size="40" class="bg-white text-blue-500 shadow-sm">
+                  <el-icon :size="24"><component :is="item.category.icon" /></el-icon>
+                </el-avatar>
+                <div>
+                  <h3 class="font-bold text-base leading-tight">{{ item.title }}</h3>
+                  <el-tag
+                    size="small"
+                    type="info"
+                    effect="plain"
+                    class="mt-1 border-none bg-transparent p-0 text-gray-500"
+                  >
+                    {{ item.category.name }}
+                  </el-tag>
+                </div>
+              </div>
+              <el-tooltip content="取消收藏" placement="top">
+                <el-icon
+                  class="text-yellow-400 cursor-pointer hover:text-gray-400 transition-colors"
+                  :size="20"
+                  @click="debounceToggleCollect(item)"
+                >
+                  <StarFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
+
+            <div class="p-5">
+              <div class="flex justify-between items-center mb-4 group">
+                <div class="text-sm text-gray-500">用户名</div>
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-gray-700 truncate max-w-[120px]">{{
+                    item.username
+                  }}</span>
+                  <el-icon
+                    class="cursor-pointer text-gray-300 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    @click="handleCopy(item.username, '用户名')"
+                  >
+                    <DocumentCopy />
+                  </el-icon>
+                </div>
+              </div>
+
+              <div class="bg-blue-50 rounded-lg p-3 flex justify-between items-center">
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-400 mb-1">密码</span>
+                  <span class="font-mono text-gray-600 font-bold tracking-widest">••••••••</span>
+                </div>
+                <el-button
+                  type="primary"
+                  size="small"
+                  icon="DocumentCopy"
+                  circle
+                  @click="handleCopy(item.decryptedPassword, '密码')"
+                ></el-button>
+              </div>
+            </div>
+
+            <div class="px-5 pb-4 text-xs text-gray-300 flex justify-end">
+              {{ item.lastUsed ? `最后使用于 ${item.lastUsed}` : '暂未使用' }}
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
-    <!-- 空状态 -->
-    <div v-else class="empty-state">
-      <el-icon class="empty-icon"><Collection /></el-icon>
-      <p>暂无收藏密码</p>
-      <p>可在「所有密码」中点击星标添加收藏</p>
-      <el-button type="text" @click="goToAllPasswords">前往所有密码</el-button>
+    <div v-else class="flex flex-col items-center justify-center py-20 text-gray-400">
+      <div class="bg-gray-100 p-6 rounded-full mb-4">
+        <el-icon :size="48" class="text-gray-300"><Collection /></el-icon>
+      </div>
+      <p class="text-lg font-medium text-gray-600">暂无收藏密码</p>
+      <p class="text-sm mb-6">将常用的账号添加到这里，查找更方便</p>
+      <el-button type="primary" plain @click="goToAllPasswords">前往添加收藏</el-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { StarFilled, DocumentCopy, Collection } from '@element-plus/icons-vue'
+import { onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useCollectStore } from '@renderer/stores/collection'
+import { useDebounceFn } from '@vueuse/core'
 
-// 模拟收藏的密码数据
-const collectedPasswords = ref([
-  {
-    id: 1,
-    name: 'Amazon',
-    category: '购物帐号',
-    icon: 'ShoppingBag',
-    username: 'john.doe@example.com',
-    password: '********'
-  },
-  {
-    id: 2,
-    name: 'Steam',
-    category: '游戏帐号',
-    icon: 'Box',
-    username: 'doe_gamer',
-    password: '********'
-  },
-  {
-    id: 3,
-    name: 'Facebook',
-    category: '网站账户',
-    icon: 'Location',
-    username: 'john.doe.567',
-    password: '********'
-  }
-])
+const collectStroe = useCollectStore()
+onMounted(async () => {
+  await collectStroe.fetchCollectedPassword()
+})
 
-// 整理收藏操作
-const handleManageCollection = () => {
-  ElMessage.info('可批量取消收藏、排序等（实际项目中实现对应逻辑）')
+const handleManageCollection = (): void => {
+  ElMessage.info('功能开发中：支持拖拽排序')
 }
 
-// 切换收藏状态
-const handleToggleCollect = (item) => {
-  // 实际项目中调用接口取消收藏，这里模拟移除
-  const index = collectedPasswords.value.findIndex((i) => i.id === item.id)
-  if (index > -1) {
-    collectedPasswords.value.splice(index, 1)
-    ElMessage.success('已取消收藏')
+const handleToggleCollect = async (item): Promise<void> => {
+  try {
+    await collectStroe.toggleCollection(item.id)
+    ElMessage.success(`${item.title}已从收藏夹移除`)
+  } catch (error) {
+    ElMessage.error('切换收藏状态失败')
+    console.error(error)
   }
 }
 
-// 复制密码
-const handleCopy = async (password) => {
-  await navigator.clipboard.writeText(password)
-  ElMessage.success('密码已复制到剪贴板')
+const debounceToggleCollect = useDebounceFn(handleToggleCollect, 200)
+
+const handleCopy = async (text: string, label = '内容'): Promise<void> => {
+  try {
+    await navigator.clipboard.writeText(text)
+    ElMessage.success(`${label}已复制`)
+  } catch (error) {
+    ElMessage.error('复制失败')
+    console.error(error)
+  }
 }
 
 // 前往所有密码页
 const goToAllPasswords = () => {
-  ElMessage.info('跳转到「所有密码」页面（实际项目中通过路由跳转）')
+  ElMessage.info('跳转到「所有密码」页面')
 }
 </script>
 
 <style scoped>
+:deep(.el-card) {
+  border: none;
+  overflow: visible; /* 允许阴影溢出 */
+}
+
 :deep(.el-divider__text.is-left) {
   font-size: 0.8rem;
   font-weight: normal;
   color: rgba(162, 167, 175, 0.8);
-}
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-.page-header h2 {
-  font-weight: 600;
-}
-.page-header p {
-  color: #666;
-  margin-bottom: 16px;
-}
-
-.password-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-}
-.password-card {
-  border-radius: 8px;
-  overflow: hidden;
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid #eee;
-}
-.card-icon {
-  font-size: 24px;
-  color: #409eff;
-  margin-right: 8px;
-}
-.card-header h3 {
-  font-size: 16px;
-  font-weight: 500;
-  text-align: center;
-}
-.star-icon {
-  font-size: 18px;
-}
-.card-body {
-  padding: 16px;
-}
-.field {
-  margin-bottom: 12px;
-}
-.field label {
-  display: block;
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 4px;
-}
-.field span {
-  display: block;
-}
-.card-actions {
-  text-align: right;
-  margin-top: 12px;
-}
-.action-icon {
-  font-size: 18px;
-  color: #666;
-}
-.action-icon:hover {
-  color: #409eff;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  text-align: center;
-  color: #999;
-}
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-.empty-state p {
-  margin: 4px 0;
 }
 </style>

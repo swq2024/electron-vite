@@ -12,6 +12,7 @@
         </el-form-item>
         <el-alert
           type="info"
+          title="Attention:"
           description="仅限支持 WEBP、JPG、PNG、AVIF 等格式且小于 2 M"
           show-icon
           :closable="false"
@@ -101,9 +102,7 @@ const submitForm = async (formEl: FormInstance | undefined | null): Promise<void
   align-items: center;
   justify-content: center;
 }
-:deep(.el-alert) {
-  width: 420px;
-  height: 32px;
+.el-alert {
   margin: 0 0 20px 40px;
   background-color: rgba(255, 255, 255, 0.05);
   box-shadow: 1px 2px 2px 0 rgba(0, 0, 0, 0.05);

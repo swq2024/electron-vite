@@ -4,17 +4,13 @@ import password from '@renderer/api/password'
 
 export const usePwdStore = defineStore('password', () => {
   const passwordList = ref<PasswordItem[]>([])
-  const pagination = ref<Pagination>()
 
+  const total = ref(0)
   const currentPage = shallowRef(1)
   const pageSize = shallowRef(1)
 
   const setPasswordList = (newList: []): void => {
     passwordList.value = newList
-  }
-
-  const setPagination = (newPagination: Pagination): void => {
-    pagination.value = newPagination
   }
 
   const getPasswordList = async (params = {}): Promise<void> => {
@@ -30,7 +26,7 @@ export const usePwdStore = defineStore('password', () => {
           showPassword: false
         }))
       )
-      setPagination(response.data.pagination)
+      total.value = response.data.pagination.total
     } catch (error) {
       console.error(error)
     }
@@ -45,15 +41,42 @@ export const usePwdStore = defineStore('password', () => {
     }
   }
 
-  const getUserFavorites = async (): Promise<void> => {}
+  const createPassword = async (data: PasswordForm): Promise<void> => {
+    try {
+      await password.createPassword(data)
+      await getPasswordList()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const updatePassword = async (id: string, data: PasswordForm): Promise<void> => {
+    try {
+      await password.updatePassword(id, data)
+      await getPasswordList()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const deletePassword = async (id: string): Promise<void> => {
+    try {
+      await password.deletePassword(id)
+      await getPasswordList()
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   return {
     passwordList,
-    pagination,
+    total,
     currentPage,
     pageSize,
     getPasswordList,
     toggleFavorite,
-    getUserFavorites
+    createPassword,
+    updatePassword,
+    deletePassword
   }
 })
